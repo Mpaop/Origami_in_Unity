@@ -86,6 +86,14 @@ namespace Origami_Mesh
 
 			return new MeshVertex(m_vertices[idx], m_layers[idx], m_connectedList[idx]);
 		}
+
+		public void ResetConnectionFlags()
+		{
+			for (int i = 0; i < m_connectedList.Count; ++i)
+			{
+				m_connectedList[i] = false;
+			}
+		}
 	}
 
 	//折り紙と折り目のクラスを汎化させたクラス

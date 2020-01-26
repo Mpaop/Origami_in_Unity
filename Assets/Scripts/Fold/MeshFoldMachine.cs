@@ -56,7 +56,7 @@ namespace Origami_Fold
 		private Matrix4x4 m_MatZ;
 
 		//紙の折り目の幅
-		private const float CREASE_WIDTH = 0.008f;
+		private const float CREASE_WIDTH = 0.003f;
 
 		//角度の大きさ
 		private const float ANGLE_OFFSET = 1f;
@@ -339,7 +339,7 @@ namespace Origami_Fold
 		/// <summary>
 		/// 折り目や折り紙など、隙間を埋めるためのメッシュ(最初は潰れた状態のもの)を生成する
 		/// </summary>
-		private void GenerateSquashedMeshes(List<CreaseGenerationInfo> genInfoList, List<MeshVertex> intersectionsPerLayerList, List<OrigamiMesh> fillerMeshParentList,
+		private void GenerateSquashedMeshes(List<CreaseGenerationInfo> genInfoList, List<MeshVertex> intersectionsPerLayerList, List<OrigamiMesh> fillerMeshParentList, in List<int> ignoreLayerList,
 											in Vector3 startPoint, in Vector3 creaseDir, in Vector3 creaseDirNorm, in Vector3 perpendicularVec,
 											in int innerLayer, in int outerLayer, in Matrix4x4 matZ, eFoldType type)
 		{
@@ -400,6 +400,25 @@ namespace Origami_Fold
 			for (int layer = start; layer != end; ++layer)
 			{
 				if(idx >= genInfoList.Count) break;
+
+                //折り目のレイヤー情報を取得. 新しいレイヤーの値とinnerLayerとの差分から分割前までのレイヤーの値を取得
+                int dif, originalLayer;
+                if (type == eFoldType.MoutainFold)
+                {
+                    dif = layer - (innerLayer - 1);
+                    originalLayer = innerLayer - dif;
+                }
+                else
+                {
+                    dif = layer - (innerLayer + 1);
+                    originalLayer = innerLayer - dif;
+                }
+
+				if(ignoreLayerList.Contains(originalLayer))
+				{
+					if(layer != newOuter) ++layerListIdx;
+					continue;
+				}
 
 				//今回のゲームに関しては問題ないが、仮に同じレイヤー情報を持つが、紙として繋がっていないメッシュが両方とも折る対象になった場合
 				//例えば、端と端を少し折った状態
@@ -471,20 +490,6 @@ namespace Origami_Fold
 				var crease = new Crease();
 				CreaseGenerateResults[] results;
 
-
-                //折り目のレイヤー情報を取得. 新しいレイヤーの値とinnerLayerとの差分から分割前までのレイヤーの値を取得
-				int dif, originalLayer;
-				if(type == eFoldType.MoutainFold)
-				{
-					dif = closest.OrigamiMesh.FoldLayer - (innerLayer - 1);
-					originalLayer = innerLayer - dif;
-				}
-                else
-                {
-                    dif = closest.OrigamiMesh.FoldLayer - (innerLayer + 1);
-					originalLayer = innerLayer - dif;
-                }
-
                 bool facing = type == eFoldType.MoutainFold ? !closest.OrigamiMesh.IsFacingUp : closest.OrigamiMesh.IsFacingUp;
 
                 var angle = Mathf.Atan2(perpendicularVec.y, perpendicularVec.x);
@@ -526,7 +531,7 @@ namespace Origami_Fold
                     }
 
                     //隙間メッシュを生み出す親を探す
-                    if (fillerMeshParentList.Count > 0)
+                    if (fillerMeshParentList.Count > 0 && fillerMeshParentList.Count > parentIdx)
                     {
 
                         //隙間このままだと、紙に隙間が生じるため、それを埋めるメッシュを生成する
@@ -920,6 +925,9 @@ namespace Origami_Fold
 						MeshVertex vx3 = new MeshVertex(vertices[resIsNonZero[0]], mesh.FoldLayer, false);
 
 						mesh.UpdateOrigamiTriangleMesh(GetVerticesSortedClockwise(vx1, vx2, vx3));
+
+						foreach(var zero in resIsZero) SetClosestAndFurthestVertices(startPoint, vertices[zero], ref outClosestIntersection, ref outFurthestIntersection);
+
 						continue;
 					}
 					else if (resIsZero.Count == 1)			//0に極めて近いresが1つなら2つのメッシュに分割すればいいので中点を求める
@@ -937,15 +945,8 @@ namespace Origami_Fold
 							var vx2 = new MeshVertex(vertices[resIsNonZero[0]], mesh.FoldLayer, false);
 							var vx3 = new MeshVertex(vertices[resIsNonZero[1]], mesh.FoldLayer, false);
 
-                            //新しいメッシュを生成
-                            OrigamiMesh newMesh = GenerateOrigamiMesh(mesh, vx1, mid, vx2);
-                            newMeshList.Add(newMesh);
-
-                            //現在あるメッシュを三角の一つとして使い回す
-                            mesh.UpdateOrigamiTriangleMesh(GetVerticesSortedClockwise(vx1, mid, vx3));
-
-							//outClosest を必要あれば更新
-							SetClosestAndFurthestVertices(startPoint, midPoint, ref outClosestIntersection, ref outFurthestIntersection);
+							//resIsZeroとはつまり、この座標も交点であることを意味するので
+							SetClosestAndFurthestVertices(startPoint, vertices[resIsZero[0]], ref outClosestIntersection, ref outFurthestIntersection);
 
                             // 折った時に折り目が重なるとZファイティングを起こすため、それをずらすための頂点の候補を算出する
                             // もし、ここで判定がfalseとなった場合、折る側にあるメッシュの範囲が狭すぎることを意味するため、その時点でfalseを返して分割を終了する
@@ -969,6 +970,16 @@ namespace Origami_Fold
                                     return false;
                                 }
                             }
+
+                            //新しいメッシュを生成
+                            OrigamiMesh newMesh = GenerateOrigamiMesh(mesh, vx1, mid, vx2);
+                            newMeshList.Add(newMesh);
+
+                            //現在あるメッシュを三角の一つとして使い回す
+                            mesh.UpdateOrigamiTriangleMesh(GetVerticesSortedClockwise(vx1, mid, vx3));
+
+                            //outClosest を必要あれば更新
+                            SetClosestAndFurthestVertices(startPoint, midPoint, ref outClosestIntersection, ref outFurthestIntersection);
                         }
 
                         #endregion
@@ -1589,6 +1600,9 @@ namespace Origami_Fold
 				//交点も各レイヤーで始点より最も遠いものを取得する
 				List<MeshVertex> endVerticesPerLayerList = new List<MeshVertex>();
 
+                //レイヤーが一つも折る対象とならない場合も想定されるので、無視して欲しいレイヤーのリストを作成
+                List<int> ignoreLayers = new List<int>();
+
 				if(outIntersections.Count > 0)
 				{
 					outIntersections = outIntersections.OrderBy(x => x.Layer).ToList();
@@ -1600,17 +1614,23 @@ namespace Origami_Fold
                     for (int i = start; i < end; ++i)
                     {
                         MeshVertex vertex = outIntersections[layerIdx];
-                        int layer = vertex.Layer;
 
-                        while (++layerIdx < outIntersections.Count && layer == outIntersections[layerIdx].Layer)
+                        while (layerIdx < outIntersections.Count && i == outIntersections[layerIdx].Layer)
                         {
                             var dis = (vertex.Vertex - p1).sqrMagnitude;
                             var compDis = (outIntersections[layerIdx].Vertex - p1).sqrMagnitude;
 
                             if (dis < compDis) vertex = outIntersections[layerIdx];
+							++layerIdx;
                         }
 
-                        endVerticesPerLayerList.Add(vertex);
+                        if(i == vertex.Layer) endVerticesPerLayerList.Add(vertex);
+						else
+						{
+							//そのレイヤーのメッシュが一つも分割されないという状況も想定される
+							endVerticesPerLayerList.Add(new MeshVertex(Vector3.zero, i, false));
+							ignoreLayers.Add(i);
+						}
 
 						if(layerIdx >= outIntersections.Count) break;
                     }
@@ -1631,18 +1651,20 @@ namespace Origami_Fold
                     for (int i = start; i < end; ++i)
                     {
                         MeshVertex vertex = outIntersectionsPerLayerList[layerIdx];
-                        int layer = vertex.Layer;
-                        int layerDif = GetIntegerDif(layer, prefoldInfo.outerLayer);
+                        int layerDif = GetIntegerDif(i, prefoldInfo.outerLayer);
 
-                        while (++layerIdx < outIntersectionsPerLayerList.Count && layer == outIntersectionsPerLayerList[layerIdx].Layer)
+                        while (layerIdx < outIntersectionsPerLayerList.Count && i == outIntersectionsPerLayerList[layerIdx].Layer)
                         {
                             var dis = (vertex.Vertex - cachedStartPoints[layerDif]).sqrMagnitude;
                             var compDis = (outIntersectionsPerLayerList[layerIdx].Vertex - cachedStartPoints[layerDif]).sqrMagnitude;
 
                             if (dis < compDis) vertex = outIntersectionsPerLayerList[layerIdx];
+
+							++layerIdx;
                         }
 
-                        endAlteredVerticesPerLayerList.Add(vertex);
+                        if (i == vertex.Layer) endAlteredVerticesPerLayerList.Add(vertex);
+                        else endAlteredVerticesPerLayerList.Add(new MeshVertex(Vector3.zero, i, false));
 
                         if (layerIdx >= outIntersectionsPerLayerList.Count) break;
                     }
@@ -1691,7 +1713,7 @@ namespace Origami_Fold
 
 				SetAdjustmentResults(outClosest, p1, p2, endVerticesPerLayerList, endAlteredVerticesPerLayerList, prefoldInfo.innerLayer, prefoldInfo.outerLayer, halfwayRad, m_MatZ, type, out List<OrigamiMesh> fillerMeshParent, splitsOnEndPoints);
 
-				GenerateSquashedMeshes(generationInfoList, endAlteredVerticesPerLayerList, fillerMeshParent, p1, outDir, outDirNorm, outPerpendiculatVec, prefoldInfo.innerLayer, prefoldInfo.outerLayer, m_MatZ, type);
+				GenerateSquashedMeshes(generationInfoList, endAlteredVerticesPerLayerList, fillerMeshParent, ignoreLayers, p1, outDir, outDirNorm, outPerpendiculatVec, prefoldInfo.innerLayer, prefoldInfo.outerLayer, m_MatZ, type);
 				
 				if(type == eFoldType.MoutainFold)
 				{

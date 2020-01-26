@@ -159,10 +159,7 @@ namespace Origami_Mesh
         //折る結果を求める前に折り目と繋がっているフラグをリセットする
         public void ResetCreaseConnectionFlags()
         {
-            for (int i = 0; i < m_vertices.ConnectedToCreaseList.Count; ++i)
-            {
-                m_vertices.ConnectedToCreaseList[i] = false;
-            }
+            m_vertices.ResetConnectionFlags();
         }
     }
 }
