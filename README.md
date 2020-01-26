@@ -8,21 +8,32 @@
 
 各namespaceとクラスの詳細：
 
-1.Origami_Demo
-  -MeshCreaseDrawer
+## **1. Origami_Fold**
+  - MeshFoldMachine
 
-2.Origami_Fold
-  -MeshFoldMachine
 
-3.Origami_Mesh
-  -BaseMesh
-  -OrigamiMesh
-  -CreaseMesh
+## **2. Origami_Mesh**
+  - BaseMesh
+  - OrigamiMesh
+  - CreaseMesh
 
-4.Origami_Result
-  -FoldResults
-  -OrigamiFoldResults
-  -CreaseFoldResults
 
-5.Origami_Utility
-  -OrigamiUtility
+## **3. Origami_Result**
+  - FoldResults
+  - OrigamiFoldResults
+  - CreaseFoldResults
+
+
+## **4. Origami_Utility**
+  - OrigamiUtility
+
+
+## **5. Origami_Demo**
+   - MeshCreaseDrawer
+  
+  
+## **今後の課題**
+  - やること
+## **現在確認されている不具合**
+  - バグ
+  
