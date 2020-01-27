@@ -2,13 +2,16 @@
 
 ##### 使用エンジン： Unity (2019.2.19f1)
 
-動画： (アップ予定)
+![demo](https://raw.githubusercontent.com/wiki/Mpaop/Origami_in_Unity/images/fold01.gif)
 
 #### 動作はFoldDemoSceneにて確認出来ます。（以下、FoldDemoSceneの操作方法)
      1. シーンをプレイ状態にすると、メッシュが表示されます。
      2. 画面上でマウスをクリックした状態でドラッグし、折り目となる線をメッシュと重なるように引いてください。
      3. 引き終えたら、右下にある「折る」というボタンをクリックしてください。メッシュを折る処理が行われます。
      ※ 何らかの不具合や、メッシュを初期状態に戻したい場合は、右下の「Reset」というボタンをクリックしてください。シーンの再ロードが行われます。
+
+## ゲームで用いた例
+![play](https://raw.githubusercontent.com/wiki/Mpaop/Origami_in_Unity/images/demo.gif)
 
 ## namespaceと各クラスの概要：
 
