@@ -18,7 +18,6 @@ namespace Origami_Mesh
 		public readonly Vector3 Vertex;
 		public readonly int Layer;
 
-		//将来的に使う予定。今は特に何も意味を持たない
 		public readonly bool IsConnectedToCrease;
 
 		public MeshVertex(in Vector3 vx, in int l, bool isConnectedToCrease)
@@ -124,7 +123,7 @@ namespace Origami_Mesh
 		/// 定数
 		/// </summary>
 
-		//代入するUV値のデフォルト値を保持する. 多分テクスチャ作りで失敗したと思うのだが、0fに設定するとポリゴンの辺の部分が赤くなるので0.1fとしている。二枚目を0.51fにしているのは反対に白くなるから
+		//代入するUV値のデフォルト値を保持する. 多分テクスチャ作りで失敗したと思うのだが、0fに設定するとポリゴンの辺の部分が赤くなるので0.1fとしている
 		private static readonly List<Vector2> m_OrigamiUV = new List<Vector2> { new Vector2(0.1f, 0.1f), new Vector2(0.1f, 0.2f), new Vector2(0.2f, 0.2f),
 																				new Vector2(0.7f, 0.7f), new Vector2(0.7f, 0.9f), new Vector2(0.9f, 0.9f) };
 
@@ -134,7 +133,7 @@ namespace Origami_Mesh
 		//代入するポリゴン座標の描画順を保持する。裏向きの場合
 		private static readonly List<int> m_OrigamiTrianglesReversed = new List<int> { 2, 1, 0, 3, 4, 5 };
 
-		//参照用のリスト
+		//添字参照用のリスト
 		private List<int> m_triangles;
 
 		//マテリアル
