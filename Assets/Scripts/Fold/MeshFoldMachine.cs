@@ -492,9 +492,6 @@ namespace Origami_Fold
 
                 bool facing = type == eFoldType.MoutainFold ? !closest.OrigamiMesh.IsFacingUp : closest.OrigamiMesh.IsFacingUp;
 
-                var angle = Mathf.Atan2(perpendicularVec.y, perpendicularVec.x);
-                facing = angle < 0 ? !facing : facing;
-
                 //レイヤーの差分が1以上ある場合はZファイティング対策でずらしたいため、処理を分ける
 				MeshVertex vx1, vx2, vx3, vx4;
                 if (newOuter == layer)
@@ -1156,11 +1153,9 @@ namespace Origami_Fold
 				var topLayer = crease.GetCreaseLayer(1);
 
 				//折り目は正面を向いていないため、二点のみの比較で済む
-				var dif1 = GetIntegerDif(bottomLayer, outerLayer);
 				var nVec = (vertices[0] - startPoint).normalized;
 				var res1 = Cross2DXY(creaseDirNorm, nVec);
 
-                var dif2 = GetIntegerDif(topLayer, outerLayer);
 				nVec = (vertices[2] - startPoint).normalized;
 				var res2 = Cross2DXY(creaseDirNorm, nVec);
 
