@@ -34,6 +34,57 @@ namespace Origami_Mesh
 		private List<Vector3> m_vertices;
 
 		public List<Vector3> Vertices => m_vertices;
+
+		//頂点の値が更新された際に呼ばれるデリゲートの型
+		public delegate void OnUpdateVertex(in Vector3 vertex);
+
+		//各頂点の値が更新される時に呼ばれるデリゲート
+		private OnUpdateVertex[] m_onupdateVertices;
+
+		public void AddUpdateVertexEventAt(in int idx, OnUpdateVertex updateVertex)
+		{
+			if(0 > idx || m_onupdateVertices.Length <= idx)
+			{
+				Debug.LogError($"idx is invalid idx={idx}");
+				return;
+			}
+
+			m_onupdateVertices[idx] += updateVertex;
+		}
+
+		public void RemoveUpdateVertexEventAt(in int idx, OnUpdateVertex updateVertex)
+        {
+            if (0 > idx || m_onupdateVertices.Length <= idx)
+            {
+                Debug.LogError($"idx is invalid idx={idx}");
+                return;
+            }
+
+            m_onupdateVertices[idx] -= updateVertex;
+		}
+
+		public void EmptyUpdateVertexEventAt(in int idx)
+        {
+            if (0 > idx || m_onupdateVertices.Length <= idx)
+            {
+                Debug.LogError($"idx is invalid idx={idx}");
+                return;
+            }
+
+            m_onupdateVertices[idx] = null;
+		}
+
+		//インデクサ
+		public Vector3 this [int i]
+		{
+			get => m_vertices[i];
+			set
+			{
+				m_vertices[i] = value;
+				m_onupdateVertices[i]?.Invoke(in value);
+			}
+		}
+
 		private List<int> m_layers;
 		public List<int> Layers => m_layers;
 
@@ -53,6 +104,8 @@ namespace Origami_Mesh
 
 			m_connectedList = new List<bool>(size);
 			m_connectedList.AddRange(connected);
+
+			m_onupdateVertices = new OnUpdateVertex[size];
 
 			Size = size;
 		}
@@ -236,9 +289,9 @@ namespace Origami_Mesh
 			m_Mesh.Clear();
 
 			{
-				m_vertices.Vertices[0] = m_vertices.Vertices[3] = ver1;
-				m_vertices.Vertices[1] = m_vertices.Vertices[4] = ver2;
-				m_vertices.Vertices[2] = m_vertices.Vertices[5] = ver3;
+				m_vertices[0] = m_vertices[3] = ver1;
+				m_vertices[1] = m_vertices[4] = ver2;
+				m_vertices[2] = m_vertices[5] = ver3;
 
 			}
 
@@ -278,11 +331,10 @@ namespace Origami_Mesh
 			int i = 0;
 			foreach(var vertex in vertices)
 			{
-				m_vertices.Vertices[i] = vertex.Vertex;
 				m_vertices.ConnectedToCreaseList[i++] = vertex.IsConnectedToCrease;
 			}
 
-            this.UpdateOrigamiTriangleMesh(m_vertices.Vertices[0], m_vertices.Vertices[1], m_vertices.Vertices[2]);
+            this.UpdateOrigamiTriangleMesh(vertices.ElementAt(0).Vertex, vertices.ElementAt(1).Vertex, vertices.ElementAt(2).Vertex);
 		}
 
 		public void UpdateOrigamiLayers(in int layer1, in int layer2, in int layer3)

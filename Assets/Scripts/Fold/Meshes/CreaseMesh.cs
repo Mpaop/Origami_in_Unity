@@ -124,6 +124,41 @@ namespace Origami_Mesh
         }
     }
 
+    //折り目に用いる頂点
+    public class CreaseVertex
+    {
+        public Vector3 Vertex {get; private set; }
+        public OrigamiMesh Mesh {get; private set; }
+
+        //メッシュと接している頂点の添字
+        private int m_meshIdx;
+
+        public CreaseVertex (in Vector3 vec, in OrigamiMesh mesh, in int idx)
+        {
+            Vertex = vec;
+            Mesh = mesh;
+            m_meshIdx = idx;
+            mesh.MeshVertices.AddUpdateVertexEventAt(idx, UpdateVertex);
+        }
+
+        //頂点情報の更新のみ行う時に使う
+        public void UpdateVertex (in Vector3 vertex)
+        {
+            Vertex = vertex;
+        }
+
+        //折り目が分割される場合など、値を全て更新がある時に使う
+        public void RenewValues(in Vector3 vertex, in OrigamiMesh mesh, int idx)
+        {
+            Vertex = vertex;
+            Mesh.MeshVertices.RemoveUpdateVertexEventAt(m_meshIdx, UpdateVertex);
+
+            Mesh = mesh;
+            m_meshIdx = idx;
+            mesh.MeshVertices.AddUpdateVertexEventAt(idx, UpdateVertex);
+        }
+    }
+
     //折り目のメッシュをひとまとめにして管理するクラス
     public class Crease : IFoldMeshCallbacks
     {
@@ -131,9 +166,10 @@ namespace Origami_Mesh
 
         private Vector3[] m_vertices;
 
-        //private readonly int[] m_creaseLayers;
-
         public IReadOnlyList<Vector3> MeshVertices { get; }
+
+        //折り目の頂点を管理するために用いる。上は破棄予定
+        private List<CreaseVertex> m_creaseVertices;
 
         //折り目の向き
         public bool CreaseFacing => m_creases[0].IsFacingUp;
@@ -167,15 +203,17 @@ namespace Origami_Mesh
         public Crease()
         {
             m_creases = new CreaseMesh[(int)eCreaseTypes.MAX];
-            m_vertices = new Vector3[(int)eCreaseVertices.MAX];
-            for (int i = 0; i < (int)eCreaseVertices.MAX; i++)
+
+            int size = (int)eCreaseTypes.MAX;
+            m_vertices = new Vector3[size];
+            for (int i = 0; i < size; i++)
             {
                 m_vertices[i] = Vector3.zero;
             }
 
             MeshVertices = new ReadOnlyCollection<Vector3>(m_vertices);
 
-            //m_creaseLayers = new int[(int)eCreaseTypes.MAX];
+            m_creaseVertices = new List<CreaseVertex>(size);
         }
 
         //折り目のレイヤーを取得する
@@ -238,6 +276,12 @@ namespace Origami_Mesh
             }
 
             HasExtended = extended;
+        }
+
+        //折り目のメッシュを生成する。折り目の頂点クラスは呼び出し元で宣言してから渡す
+        public void GenerateCreaseMesh(List<CreaseVertex> vertices)
+        {
+            for(int i = 0; i < m_creaseVertices.Count; ++i) m_creaseVertices[i] = vertices[i];
         }
 
         /// <summary>
