@@ -24,7 +24,7 @@ namespace Origami_Mesh
         /// <param name="facing">メッシュの向き</param>
         /// <param name="materialPath">マテリアルのパス</param>
         /// <param name="parent">オブジェクトの親</param>
-        public CreaseMesh(in IEnumerable<Vector3> vertices, in IEnumerable<int> creaseLayers, bool facing, in string materialPath, in Transform parent) : base(vertices, creaseLayers, new List<bool> { false, false, false, false }, facing, materialPath, parent)
+        public CreaseMesh(in Vector3[] vertices, in IEnumerable<int> creaseLayers, bool facing, in string materialPath, in Transform parent) : base(vertices, creaseLayers, new List<bool> { false, false, false, false }, facing, materialPath, parent)
         {
             // m_CreaseLayers = new List<int>(creaseLayers.Count());
             // m_CreaseLayers.AddRange(creaseLayers);
@@ -61,7 +61,7 @@ namespace Origami_Mesh
             {
                 dif = m_vertices.Layers[idx] - layer;
                 rad = radians + dif * OrigamiUtility.ANGLE_OFFSET;
-                if (0 >= rad) return m_vertices.Vertices[idx];
+                if (0 >= rad) return m_vertices[idx];
 
                 ratio = rad / results.TargetAngle;
             }
@@ -69,7 +69,7 @@ namespace Origami_Mesh
             {
                 dif = m_vertices.Layers[idx] - layer;
                 rad = radians + dif * OrigamiUtility.ANGLE_OFFSET;
-                if (OrigamiUtility.TWO_PI <= rad) return m_vertices.Vertices[idx];
+                if (OrigamiUtility.TWO_PI <= rad) return m_vertices[idx];
 
                 ratio = (results.StartAngle - rad) / (results.StartAngle - results.TargetAngle);
             }
@@ -169,7 +169,7 @@ namespace Origami_Mesh
         public IReadOnlyList<Vector3> MeshVertices { get; }
 
         //折り目の頂点を管理するために用いる。上は破棄予定
-        private List<CreaseVertex> m_creaseVertices;
+        private CreaseVertex[] m_creaseVertices;
 
         //折り目の向き
         public bool CreaseFacing => m_creases[0].IsFacingUp;
@@ -204,7 +204,7 @@ namespace Origami_Mesh
         {
             m_creases = new CreaseMesh[(int)eCreaseTypes.MAX];
 
-            int size = (int)eCreaseTypes.MAX;
+            int size = (int)eCreaseVertices.MAX;
             m_vertices = new Vector3[size];
             for (int i = 0; i < size; i++)
             {
@@ -213,7 +213,7 @@ namespace Origami_Mesh
 
             MeshVertices = new ReadOnlyCollection<Vector3>(m_vertices);
 
-            m_creaseVertices = new List<CreaseVertex>(size);
+            m_creaseVertices = new CreaseVertex[size];
         }
 
         //折り目のレイヤーを取得する
@@ -279,9 +279,14 @@ namespace Origami_Mesh
         }
 
         //折り目のメッシュを生成する。折り目の頂点クラスは呼び出し元で宣言してから渡す
-        public void GenerateCreaseMesh(List<CreaseVertex> vertices)
+        public void GenerateCreaseMesh(List<CreaseVertex> vertices, in bool facing, in string materialPath, in Transform parent)
         {
-            for(int i = 0; i < m_creaseVertices.Count; ++i) m_creaseVertices[i] = vertices[i];
+            for(int i = 0; i < m_creaseVertices.Length; ++i) m_creaseVertices[i] = vertices[i];
+
+            m_creases[(int)eCreaseTypes.Bottom] = new CreaseMesh(new Vector3[3]{m_creaseVertices[0].Vertex, m_creaseVertices[1].Vertex, m_creaseVertices[2].Vertex}, 
+                                                                 new List<int>(3){vertices[0].Mesh.FoldLayer, vertices[0].Mesh.FoldLayer, vertices[0].Mesh.FoldLayer}, facing, materialPath, parent);
+            m_creases[(int)eCreaseTypes.Top] = new CreaseMesh(new Vector3[3]{m_creaseVertices[0].Vertex, m_creaseVertices[2].Vertex, m_creaseVertices[3].Vertex},
+                                                              new List<int>(3){vertices[0].Mesh.FoldLayer, vertices[0].Mesh.FoldLayer, vertices[0].Mesh.FoldLayer}, facing, materialPath, parent);
         }
 
         /// <summary>
@@ -389,8 +394,8 @@ namespace Origami_Mesh
 
             for (int i = 0; i < vertices.Length; i++) m_vertices[i] = vertices[i];
 
-            m_creases[(int)eCreaseTypes.Bottom].UpdateOrigamiTriangleMesh(new List<Vector3>(3) { m_vertices[0], m_vertices[1], m_vertices[2] });
-            m_creases[(int)eCreaseTypes.Top].UpdateOrigamiTriangleMesh(new List<Vector3>(3) { m_vertices[0], m_vertices[2], m_vertices[3] });
+            m_creases[(int)eCreaseTypes.Bottom].UpdateOrigamiTriangleMesh(new Vector3[3] { m_vertices[0], m_vertices[1], m_vertices[2] });
+            m_creases[(int)eCreaseTypes.Top].UpdateOrigamiTriangleMesh(new Vector3[3] { m_vertices[0], m_vertices[2], m_vertices[3] });
         }
 
         //折紙のメッシュを渡されたラジアンに折る
@@ -472,6 +477,13 @@ namespace Origami_Mesh
             m_vertices[3] = topFold0;
         }
 
+        public void UpdateCreaseMesh()
+        {
+            //ここは順番が既に確定しているため、GetOrderedVerticesを使わずに入れる
+            m_creases[0].UpdateCreaseVertices(m_creaseVertices[0].Vertex, m_creaseVertices[1].Vertex, m_creaseVertices[2].Vertex);
+            m_creases[1].UpdateCreaseVertices(m_creaseVertices[0].Vertex, m_creaseVertices[2].Vertex, m_creaseVertices[3].Vertex);
+        }
+
         //折り終えた時の後処理
         public void OnEndFold()
         {
@@ -490,8 +502,8 @@ namespace Origami_Mesh
             OrigamiUtility.Swap(ref m_vertices[0], ref m_vertices[3]);
             OrigamiUtility.Swap(ref m_vertices[1], ref m_vertices[2]);
 
-            m_creases[0].UpdateOrigamiTriangleMesh(new List<Vector3>(3) { m_vertices[0], m_vertices[1], m_vertices[2] });
-            m_creases[1].UpdateOrigamiTriangleMesh(new List<Vector3>(3) { m_vertices[0], m_vertices[2], m_vertices[3] });
+            m_creases[0].UpdateOrigamiTriangleMesh(new Vector3[3] { m_creaseVertices[0].Vertex, m_creaseVertices[1].Vertex, m_creaseVertices[2].Vertex });
+            m_creases[1].UpdateOrigamiTriangleMesh(new Vector3[3] { m_creaseVertices[0].Vertex, m_creaseVertices[2].Vertex, m_creaseVertices[3].Vertex });
         }
 
         //伸縮を終えた時の後処理

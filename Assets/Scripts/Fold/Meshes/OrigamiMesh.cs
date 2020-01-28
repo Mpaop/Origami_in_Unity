@@ -23,7 +23,7 @@ namespace Origami_Mesh
         /// <param name="facing">メッシュの向き</param>
         /// <param name="materialPath">マテリアルのパス</param>
         /// <param name="parent">オブジェクトの親</param>
-        public OrigamiMesh(in IEnumerable<Vector3> vertices, bool facing, int layer, in IEnumerable<bool> connectedList, in string materialPath, in Transform parent) : base(vertices, new List<int>() { layer, layer, layer }, connectedList, facing, materialPath, parent)
+        public OrigamiMesh(in Vector3[] vertices, bool facing, int layer, in IEnumerable<bool> connectedList, in string materialPath, in Transform parent) : base(vertices, new List<int>() { layer, layer, layer }, connectedList, facing, materialPath, parent)
         {
             MeshObject.name = "mesh" + parent.childCount;
         }
@@ -130,14 +130,14 @@ namespace Origami_Mesh
 
             Vector3 vec0, vec1, vec2;
 
-            if (this.MeshVertices.ConnectedToCreaseList[0]) vec0 = FastLerp(this.MeshVertices.Vertices[0], adjustedVertexResults.Result0, t);
-            else vec0 = this.MeshVertices.Vertices[0];
+            if (this.MeshVertices.ConnectedToCreaseList[0]) vec0 = FastLerp(this.MeshVertices[0], adjustedVertexResults.Result0, t);
+            else vec0 = this.MeshVertices[0];
 
-            if (this.MeshVertices.ConnectedToCreaseList[1]) vec1 = FastLerp(this.MeshVertices.Vertices[1], adjustedVertexResults.Result1, t);
-            else vec1 = this.MeshVertices.Vertices[1];
+            if (this.MeshVertices.ConnectedToCreaseList[1]) vec1 = FastLerp(this.MeshVertices[1], adjustedVertexResults.Result1, t);
+            else vec1 = this.MeshVertices[1];
 
-            if (this.MeshVertices.ConnectedToCreaseList[2]) vec2 = FastLerp(this.MeshVertices.Vertices[2], adjustedVertexResults.Result2, t);
-            else vec2 = this.MeshVertices.Vertices[2];
+            if (this.MeshVertices.ConnectedToCreaseList[2]) vec2 = FastLerp(this.MeshVertices[2], adjustedVertexResults.Result2, t);
+            else vec2 = this.MeshVertices[2];
 
             this.UpdateOrigamiTriangleMesh(vec0, vec1, vec2);
         }

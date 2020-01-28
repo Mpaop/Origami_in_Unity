@@ -5,18 +5,34 @@ using Origami_Fold;
 
 namespace Origami_Result
 {
-    //折り目の生成に必要な情報をまとめたクラス
-    public class CreaseGenerationInfo
+    //メッシュ分割時に取得する情報を頂点単位で有する構造体
+    public readonly struct SplitMeshInfo
     {
-        public readonly OrigamiMesh OrigamiMesh;
-        public readonly OrigamiFoldResult Result;
-        public readonly OrigamiFoldResults OrigamiResults;
+        //頂点
+        public readonly Vector3 Vertex;
 
-        public CreaseGenerationInfo(OrigamiMesh mesh, OrigamiFoldResult res, OrigamiFoldResults oriRes)
+        //この頂点を持ち、折らない側のメッシュ
+        public readonly OrigamiMesh NonFoldMesh;
+        
+        //メッシュ1が持つその頂点の添字
+        public readonly int NonFoldIdx;
+
+        //この頂点を持ち、折る側のメッシュ
+        public readonly OrigamiMesh FoldMesh;
+
+        //メッシュ2が持つその頂点の添字
+        public readonly int FoldIdx;
+
+
+        public SplitMeshInfo(in Vector3 vertex, in OrigamiMesh nonFoldMesh, in int nonFoldIdx, in OrigamiMesh foldMesh, in int foldIdx)
         {
-            OrigamiMesh = mesh;
-            Result = res;
-            OrigamiResults = oriRes;
+            Vertex = vertex;
+            
+            NonFoldMesh = nonFoldMesh;
+            NonFoldIdx = nonFoldIdx;
+
+            FoldMesh = foldMesh;
+            FoldIdx = foldIdx;
         }
     }
 

@@ -96,26 +96,6 @@ namespace Origami_Result
             in eFoldType type,                                                                              //折る種類
             in float innerLayer,                                                                            //最も内側にあるレイヤーの数値
             in float foldHalfwayRadians, in float targetRadians,                                            //角度
-            in Matrix4x4 matX, in Matrix4x4 matZ,                                                           //回転行列
-            in List<CreaseGenerationInfo> genInfoList                                                       //折り目生成に用いるリスト
-            ) : this(mesh, creasePoint, creaseVec, perpendicularVec, type, innerLayer, foldHalfwayRadians, targetRadians, matX, matZ)
-        {
-            //折り目を生成するための情報を格納
-            if (Point0_Result.IsConnectedToOtherMesh) genInfoList.Add(new CreaseGenerationInfo(mesh, Point0_Result, this));
-
-            if (Point1_Result.IsConnectedToOtherMesh) genInfoList.Add(new CreaseGenerationInfo(mesh, Point1_Result, this));
-
-            if (Point2_Result.IsConnectedToOtherMesh) genInfoList.Add(new CreaseGenerationInfo(mesh, Point2_Result, this));
-        }
-
-        public OrigamiFoldResults(
-            in OrigamiMesh mesh,
-            in Vector3 creasePoint,                                                                         //頂点
-            in Vector3 creaseVec,                                                                           //方向ベクトル
-            in Vector3 perpendicularVec,                                                                    //補完量
-            in eFoldType type,                                                                              //折る種類
-            in float innerLayer,                                                                            //最も内側にあるレイヤーの数値
-            in float foldHalfwayRadians, in float targetRadians,                                            //角度
             in Matrix4x4 matX, in Matrix4x4 matZ                                                            //回転行列
         )
         {
@@ -141,14 +121,14 @@ namespace Origami_Result
 
             //交点を求める
             {
-                var midPoint = OrigamiUtility.GetPerpendicularIntersectionPoint(vertices.Vertices[0], creasePoint, creaseVec, magnitude);
-                Point0_Result = new OrigamiFoldResult(mesh, vertices.Vertices[0], midPoint, CreaseOffset, matX, matZ, vertices.ConnectedToCreaseList[0]);
+                var midPoint = OrigamiUtility.GetPerpendicularIntersectionPoint(vertices[0], creasePoint, creaseVec, magnitude);
+                Point0_Result = new OrigamiFoldResult(mesh, vertices[0], midPoint, CreaseOffset, matX, matZ, vertices.ConnectedToCreaseList[0]);
 
-                midPoint = OrigamiUtility.GetPerpendicularIntersectionPoint(vertices.Vertices[1], creasePoint, creaseVec, magnitude);
-                Point1_Result = new OrigamiFoldResult(mesh, vertices.Vertices[1], midPoint, CreaseOffset, matX, matZ, vertices.ConnectedToCreaseList[1]);
+                midPoint = OrigamiUtility.GetPerpendicularIntersectionPoint(vertices[1], creasePoint, creaseVec, magnitude);
+                Point1_Result = new OrigamiFoldResult(mesh, vertices[1], midPoint, CreaseOffset, matX, matZ, vertices.ConnectedToCreaseList[1]);
 
-                midPoint = OrigamiUtility.GetPerpendicularIntersectionPoint(vertices.Vertices[2], creasePoint, creaseVec, magnitude);
-                Point2_Result = new OrigamiFoldResult(mesh, vertices.Vertices[2], midPoint, CreaseOffset, matX, matZ, vertices.ConnectedToCreaseList[2]);
+                midPoint = OrigamiUtility.GetPerpendicularIntersectionPoint(vertices[2], creasePoint, creaseVec, magnitude);
+                Point2_Result = new OrigamiFoldResult(mesh, vertices[2], midPoint, CreaseOffset, matX, matZ, vertices.ConnectedToCreaseList[2]);
 
             }
         }
@@ -202,12 +182,12 @@ namespace Origami_Result
                 Vector3 v;
                 if (vertices.ConnectedToCreaseList[i])
                 {
-                    var mag = (vertices.Vertices[i] - closestIntersection).magnitude;
+                    var mag = (vertices[i] - closestIntersection).magnitude;
                     var t = mag / baseMagnitude;
 
                     v = closestIntersection + dir * t;
 
-                    v.z = vertices.Vertices[i].z;
+                    v.z = vertices[i].z;
                 }
                 else v = Vector3.zero;
 
