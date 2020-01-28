@@ -2,13 +2,19 @@
 
 ##### 使用エンジン： Unity (2019.2.19f1)
 
-動画： (アップ予定)
+<img src="https://raw.githubusercontent.com/wiki/Mpaop/Origami_in_Unity/images/fold01.gif" alt="Demo" width="700"/>
 
 #### 動作はFoldDemoSceneにて確認出来ます。（以下、FoldDemoSceneの操作方法)
      1. シーンをプレイ状態にすると、メッシュが表示されます。
      2. 画面上でマウスをクリックした状態でドラッグし、折り目となる線をメッシュと重なるように引いてください。
      3. 引き終えたら、右下にある「折る」というボタンをクリックしてください。メッシュを折る処理が行われます。
      ※ 何らかの不具合や、メッシュを初期状態に戻したい場合は、右下の「Reset」というボタンをクリックしてください。シーンの再ロードが行われます。
+  
+***
+## ゲームで用いた例
+<img src="https://raw.githubusercontent.com/wiki/Mpaop/Origami_in_Unity/images/demo02.gif" alt="ゲームの使用例" width="600"/>
+
+***
 
 ## namespaceと各クラスの概要：
 
@@ -41,8 +47,9 @@
 ### **5. Origami_Demo**
    - MeshCreaseDrawer  
    デモ用に作成した、折り目の線を引くクラス
-  
-  
+
+***
+
 ### **今後の課題**
   - 折り目の調整
   - 現在はメッシュ単位でデータを管理しているが、メモリを圧迫する原因となるため、頂点など、必要な情報のみを有するクラスに移行する
