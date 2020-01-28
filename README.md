@@ -76,18 +76,20 @@ This namespace has MeshFoldMachine, which is the core class for folding the mesh
       - A struct for folding CreaseMesh objects.
 
 
-### ** Origami_Utility(namespace)**  
+### **Origami_Utility(namespace)**  
   - **Classes included in this namespace:**  
     - OrigamiUtility  
       - A class that provides useful functions.
 
 ***
 
-## **Plans**
+## **Moving Forward**
   - Fix crease logic.  
   - Reduce the amount of calculations done per fold.
   
-### **Bugs**  
+***
+
+## **Bugs**  
   - Sometimes, creases will stick out of the origami. This is currently being worked on.
   - Sometimes, folding the meshes after being told by the MeshFoldMachine that it is unable to fold causes the meshes to break.
   
