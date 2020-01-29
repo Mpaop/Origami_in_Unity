@@ -51,21 +51,23 @@ This namespace consists of only one class, that is MeshCreaseDrawer. It is made 
 
 ### **Origami_Fold (namespace)**
 This namespace has MeshFoldMachine, which is the core module for folding the meshes. This class can be used by creating an instance.
-   - **Contents of this namespace::**  
+   - **Contents of this namespace:**  
      - MeshFoldMachine  
        - Folds the mesh.  
-       - In the demo, this class receives two vertices that were used to present the line on the screen via "InitializeFold". Using them, it divides the meshes along the line. After that, the MeshCreaseDrawer sets the amount of radians it wants the mesh to fold by calling "FoldMeshToAngle." Finally, "EndFold" is called to cleanup whatever it needs to. (Contents of EndFold are due to change in the future, so I won't go into much detail, sorry)
+       - In the demo, this class receives two points that were used to represent the line on the screen via "InitializeFold". Using them, it divides the meshes along the line. After that, the MeshCreaseDrawer sets the amount of radians it wants the mesh to fold by calling "FoldMeshToAngle." Finally, "EndFold" is called to cleanup whatever it needs to. (The functionality of EndFold is due to change in the future, so I won't go into much detail, sorry)
   
 ### **Origami_Mesh (namespace)**  
 This namespace is a collection of meshes and vertices used by the MeshFoldMachine to fold paper.
-  - **Contents of this namespace::**  
+  - **Contents of this namespace:**  
     - OrigamiBase  
-      - An abstract class of all the meshes. It's main functionalities are to update the Unity Mesh object, as well as return rotated vectors.
+      - An abstract class of all the meshes. It's main functionalities are to update the Unity Mesh object, as well as return rotated vectors.  
     - OrigamiMesh  
-      - Mesh class that derives from OrigamiBase. Doesn’t have too many functions of its own but, vertices of this mesh need a little more adjustments during the folding stage, if they are connected to a Crease mesh.
+      - Mesh class that derives from OrigamiBase. Doesn’t have too many functions of its own but, vertices of this mesh need a little more adjustments during the folding stage, if they are connected to a Crease mesh.  
     - CreaseMesh  
-      - Mesh class that is used to fill in spaces when folded. Spaces need to be created between Origami meshes in order to avoid Z-fighting. Crease meshes are created in order to avoid meshes "detaching" from the paper. Specifications of the CreaseMesh class are bound to change in the near future.
-    - MeshVertex
+      - Mesh class that is used to fill in spaces when folded. Spaces need to be created between Origami meshes in order to avoid Z-fighting. Crease meshes are created in order to avoid meshes "detaching" from the paper. Specifications of the CreaseMesh class are bound to change in the near future.  
+    - Crease
+      - The Crease class exists because crease meshes are handled in pairs for most cases.  
+    - MeshVertex  
       - MeshVertex is a readonly struct that wraps information we want bundled together for folding meshes.
     - MeshVertices
       - Meshvertices is a class that has lists of types that we can combine to create a MeshVertex object. While it may seem convenient to have a single list of MeshVertex objects, it is better to have them separated for working with Unity's Mesh class.
@@ -75,11 +77,11 @@ This namespace is a collection of meshes and vertices used by the MeshFoldMachin
 
 ### **Origami_Result (namespace)**  
 This namespace is a collection of structs that are referred to by classes such as the OrigamiMesh class during the folding stage as it contains arithmetic results meant to be used for this purpose.
-  - **Contents of this namespace::**  
+  - **Contents of this namespace:**  
     - FoldResult  
       - An readonly struct that contains data for a vertex to fold.  
     - OrigamiFoldResult
-      - A struct that wraps a FoldResult and adds other members to be used for folding OrigamiMesh objects.  
+      - A struct that wraps a FoldResult and adds other members to be used for folding (rotating) vertices of OrigamiMesh objects.  
     - OrigamiFoldResults  
       - A struct that containts multiple OrigamiFoldResult members. Each member corresponds to a vertex of the mesh it refers to.
     - CreaseGenerationInfo/CreaseGenerateResults/CreaseFoldResult/CreaseFoldResults  
@@ -90,7 +92,7 @@ This namespace is a collection of structs that are referred to by classes such a
 
 ### **Origami_Utility(namespace)**  
 This namespace currently contains OrigamiUtility.
-  - **Contents of this namespace::**  
+  - **Contents of this namespace:**  
     - OrigamiUtility  
       - A class that provides useful functions.
 
