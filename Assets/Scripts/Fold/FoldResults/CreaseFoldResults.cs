@@ -14,13 +14,13 @@ namespace Origami_Result
         //この頂点を持ち、折らない側のメッシュ
         public readonly OrigamiMesh NonFoldMesh;
         
-        //メッシュ1が持つその頂点の添字
+        //NonFoldMeshが有する頂点の添字
         public readonly int NonFoldIdx;
 
         //この頂点を持ち、折る側のメッシュ
         public readonly OrigamiMesh FoldMesh;
 
-        //メッシュ2が持つその頂点の添字
+        //FoldMeshが有する頂点の添字
         public readonly int FoldIdx;
 
 

@@ -34,12 +34,12 @@ namespace Origami_Mesh
     {
         private Vector3[] m_vertices;
 
-        public Vector3[] __Vertices => m_vertices;
-
         public Vector3[] GetMeshVertices()
         {
             return new Vector3[3] { m_vertices[0], m_vertices[2], m_vertices[4]};
         }
+
+        public void setVertices(Mesh mesh) => mesh.vertices = m_vertices;
 
         //頂点の値が更新された際に呼ばれるデリゲートの型
         public delegate void OnUpdateVertex(in Vector3 vertex);
@@ -81,6 +81,7 @@ namespace Origami_Mesh
         }
 
         //インデクサ
+        // 現状の仕様ではポリゴンの表と裏で値が同じ頂点を用いているため、i*2でアクセスする
         public Vector3 this[int i]
         {
             get
@@ -271,9 +272,7 @@ namespace Origami_Mesh
             var rotatedVec = origin - midpoint;
 
             rotatedVec = matZ.inverse.MultiplyPoint3x4(rotatedVec);
-
             rotatedVec = matX.MultiplyPoint3x4(rotatedVec);
-
             rotatedVec = matZ.MultiplyPoint3x4(rotatedVec);
 
             rotatedVec += midpoint;
@@ -306,7 +305,7 @@ namespace Origami_Mesh
             }
 
             //値の代入と再計算
-            m_Mesh.vertices = m_vertices.__Vertices;
+            m_vertices.setVertices(m_Mesh);
             m_Mesh.SetUVs(0, m_OrigamiUV);
             m_Mesh.SetTriangles(m_triangles, 0, true);
 

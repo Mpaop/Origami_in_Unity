@@ -11,13 +11,6 @@ namespace Origami_Mesh
     public sealed class CreaseMesh : OrigamiBase
     {
         /// <summary>
-        /// メンバフィールド
-        /// </summary>
-
-        //折り目の座標
-        //private List<int> m_CreaseLayers = null;
-
-        /// <summary>
         /// コンストラクタ
         /// </summary>
         /// <param name="vertices">メッシュの頂点</param>
@@ -30,90 +23,6 @@ namespace Origami_Mesh
             // m_CreaseLayers.AddRange(creaseLayers);
 
             MeshObject.name = "crease" + MeshObject.transform.parent.childCount;
-        }
-
-        /// <summary>
-        /// 折り目を伸ばす
-        /// </summary>
-        /// <param name="results"></param>
-        /// <param name="res"></param>
-        /// <param name="idx"></param>
-        /// <param name="radians"></param>
-        /// <param name="layer"></param>
-        /// <param name="type"></param>
-        /// <param name="matZ"></param>
-        /// <returns></returns>
-        private Vector3 ExtendCrease(in CreaseGenerateResults results, in CreaseGenerateResult res, int idx, in float radians, in float layer, in eFoldType type, in Matrix4x4 matZ, ref bool stopExtending)
-        {
-            if (idx < 0 || idx >= 3)
-            {
-                throw new System.ArgumentOutOfRangeException();
-            }
-
-            if (res.NoNeed2Shift)
-            {
-                return res.StartPoint;
-            }
-
-            float rad, dif, ratio;
-
-            if (type == eFoldType.MoutainFold)
-            {
-                dif = m_vertices.Layers[idx] - layer;
-                rad = radians + dif * OrigamiUtility.ANGLE_OFFSET;
-                if (0 >= rad) return m_vertices[idx];
-
-                ratio = rad / results.TargetAngle;
-            }
-            else
-            {
-                dif = m_vertices.Layers[idx] - layer;
-                rad = radians + dif * OrigamiUtility.ANGLE_OFFSET;
-                if (OrigamiUtility.TWO_PI <= rad) return m_vertices[idx];
-
-                ratio = (results.StartAngle - rad) / (results.StartAngle - results.TargetAngle);
-            }
-
-            //var checkRad = OrigamiUtility.ConvertRadiansByFoldType(rad, type);
-
-            Matrix4x4 matX;
-
-            if (!results.CanUpdate(rad, type))
-            {
-                stopExtending = true;
-
-                matX = OrigamiUtility.GetXRotationMatrix(results.TargetAngle);
-                return res.MidPoint + GetRotatedVector3(results.CreaseOffset, Vector3.zero, matX, matZ);
-            }
-
-            matX = OrigamiUtility.GetXRotationMatrix(rad);
-
-            var creaseOffset = GetRotatedVector3(results.CreaseOffset * ratio, Vector3.zero, matX, matZ);
-
-            return res.MidPoint + creaseOffset;
-        }
-
-        /// <summary>
-        /// 生成されたメッシュを伸ばす
-        /// </summary>
-        /// <param name="res"></param>
-        /// <param name="radians"></param>
-        /// <param name="layer"></param>
-        /// <param name="type"></param>
-        /// <param name="matZ"></param>
-        public void ExtendGeneratedCreaseMeshByRadians(in Crease crease, in CreaseGenerateResults res, in float radians, in float layer, in eFoldType type, in Matrix4x4 matZ, ref bool hasExtended)
-        {
-            if (crease.HasExtended) return;
-
-            Vector3 fold0, fold1, fold2;
-            bool stopExtending = false;
-            fold0 = ExtendCrease(res, res.Point0_Result, 0, radians, layer, type, matZ, ref stopExtending);
-            fold1 = ExtendCrease(res, res.Point1_Result, 1, radians, layer, type, matZ, ref stopExtending);
-            fold2 = ExtendCrease(res, res.Point2_Result, 2, radians, layer, type, matZ, ref stopExtending);
-
-            hasExtended = stopExtending;
-
-            UpdateOrigamiTriangleMesh(fold0, fold1, fold2);
         }
 
         public void UpdateCreaseFacing(bool facing) => IsFacingUp = facing;
@@ -261,23 +170,6 @@ namespace Origami_Mesh
             }
         }
 
-        //生成されたばかりの折り目を伸ばすために用いる
-        public void ExtendGeneratedCreases(in CreaseGenerateResults[] results, in float radians, in float layer, in eFoldType type, in Matrix4x4 matZ)
-        {
-            if (HasExtended) return;
-
-            int max = (int)eCreaseTypes.MAX;
-
-            bool extended = HasExtended;
-
-            for (int i = 0; i < max; i++)
-            {
-                m_creases[i].ExtendGeneratedCreaseMeshByRadians(this, results[i], radians, layer, type, matZ, ref extended);
-            }
-
-            HasExtended = extended;
-        }
-
         //折り目のメッシュを生成する。折り目の頂点クラスは呼び出し元で宣言してから渡す
         public void GenerateCreaseMesh(List<CreaseVertex> vertices, in bool facing, in string materialPath, in Transform parent)
         {
@@ -287,60 +179,6 @@ namespace Origami_Mesh
                                                                  new List<int>(3){vertices[0].Mesh.FoldLayer, vertices[0].Mesh.FoldLayer, vertices[0].Mesh.FoldLayer}, facing, materialPath, parent);
             m_creases[(int)eCreaseTypes.Top] = new CreaseMesh(new Vector3[3]{m_creaseVertices[0].Vertex, m_creaseVertices[2].Vertex, m_creaseVertices[3].Vertex},
                                                               new List<int>(3){vertices[0].Mesh.FoldLayer, vertices[0].Mesh.FoldLayer, vertices[0].Mesh.FoldLayer}, facing, materialPath, parent);
-        }
-
-        /// <summary>
-        /// 折った時に伸びる折り目を生成する
-        /// </summary>
-        /// <param name="vertices"></param>
-        /// <param name="bottomLayer"></param>
-        /// <param name="mesh"></param>
-        /// <param name="creaseOffset"></param>
-        /// <param name="startAngle"></param>
-        /// <param name="finalAngle"></param>
-        /// <param name="materialPath"></param>
-        /// <param name="parent"></param>
-        /// <returns></returns>
-        public CreaseGenerateResults[] GenerateSquashedCrease(in Vector3[] vertices, in int bottomLayer, in int topLayer, in bool facing, in Vector3 creaseOffset, in float startAngle, in float finalAngle, in string materialPath, in Transform parent)
-        {
-            if (vertices.Length != (int)eCreaseVertices.MAX)
-            {
-                Debug.LogError("Wrong size");
-                throw new System.ArgumentException();
-            }
-
-            CreaseGenerateResults[] results = new CreaseGenerateResults[(int)eCreaseTypes.MAX];
-
-            Vector3[] startPoints = { vertices[(int)eCreaseVertices.Bottom0], vertices[(int)eCreaseVertices.Bottom1], vertices[(int)eCreaseVertices.Bottom1] };
-            Vector3[] endPoints = { vertices[(int)eCreaseVertices.Bottom0], vertices[(int)eCreaseVertices.Bottom1], vertices[(int)eCreaseVertices.Top1] };
-            Vector3[] midPoints011 = { vertices[(int)eCreaseVertices.Bottom0], vertices[(int)eCreaseVertices.Bottom1], vertices[(int)eCreaseVertices.Bottom1] };
-            Vector3[] midPoints010 = { vertices[(int)eCreaseVertices.Bottom0], vertices[(int)eCreaseVertices.Bottom1], vertices[(int)eCreaseVertices.Bottom0] };
-
-            int[] creaseLayers = { bottomLayer, topLayer, bottomLayer };
-
-            //折り始めた瞬間から表示され始めるメッシュ二枚
-            m_creases[(int)eCreaseTypes.Bottom] = new CreaseMesh(startPoints, creaseLayers, facing, materialPath, parent);
-            results[(int)Crease.eCreaseTypes.Bottom] = new CreaseGenerateResults(startPoints, endPoints, midPoints011, creaseOffset, startAngle, finalAngle);
-
-            startPoints = new Vector3[3] { vertices[(int)eCreaseVertices.Bottom0], vertices[(int)eCreaseVertices.Bottom1], vertices[(int)eCreaseVertices.Bottom0] };
-            endPoints = new Vector3[3] { vertices[(int)eCreaseVertices.Bottom0], vertices[(int)eCreaseVertices.Top1], vertices[(int)eCreaseVertices.Top0] };
-            creaseLayers = new int[3] { topLayer, topLayer, bottomLayer };
-
-            m_creases[(int)eCreaseTypes.Top] = new CreaseMesh(startPoints, creaseLayers, facing, materialPath, parent);
-            results[(int)Crease.eCreaseTypes.Top] = new CreaseGenerateResults(startPoints, endPoints, midPoints010, creaseOffset, startAngle, finalAngle);
-
-            for (int i = 0; i < (int)eCreaseVertices.MAX; i++)
-            {
-                m_vertices[i] = vertices[i];
-            }
-
-            // m_creaseLayers[(int)eCreaseTypes.Bottom] = bottomLayer;
-            // m_creaseLayers[(int)eCreaseTypes.Top] = topLayer;
-            SetLayers(bottomLayer, topLayer);
-
-            HasExtended = false;
-
-            return results;
         }
 
         /// <summary>
@@ -505,16 +343,5 @@ namespace Origami_Mesh
             m_creases[0].UpdateOrigamiTriangleMesh(new Vector3[3] { m_creaseVertices[0].Vertex, m_creaseVertices[1].Vertex, m_creaseVertices[2].Vertex });
             m_creases[1].UpdateOrigamiTriangleMesh(new Vector3[3] { m_creaseVertices[0].Vertex, m_creaseVertices[2].Vertex, m_creaseVertices[3].Vertex });
         }
-
-        //伸縮を終えた時の後処理
-
-        public void OnEndExtend()
-        {
-            m_vertices[0] = GetMeshVertexAt(eCreaseVertices.Bottom0).Vertex;
-            m_vertices[1] = GetMeshVertexAt(eCreaseVertices.Bottom1).Vertex;
-            m_vertices[2] = GetMeshVertexAt(eCreaseVertices.Top1).Vertex;
-            m_vertices[3] = GetMeshVertexAt(eCreaseVertices.Top0).Vertex;
-        }
-
     }
 }

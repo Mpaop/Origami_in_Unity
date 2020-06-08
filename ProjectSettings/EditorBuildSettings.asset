@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/FoldDemoScene.unity
+    guid: b674e59fb93ce4a418ba1a80b622369a
   m_configObjects: {}

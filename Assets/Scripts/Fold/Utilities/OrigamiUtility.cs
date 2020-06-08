@@ -14,7 +14,7 @@ namespace Origami_Utility
 
 
 		//角度をずらすための数値
-		public const float ANGLE_OFFSET = Mathf.PI / 180f;
+		public const float DEG2RAD = Mathf.PI / 180f;
 
 		//誤差判定用の閾値。桁数を多め
 		public const double ALLOWABLE_MARGIN_HIGH_PRECISION = 0.00001;
@@ -26,25 +26,25 @@ namespace Origami_Utility
 		public const float SINCOS_45 = 0.7071068f;
 
 		//0度
-		public static readonly Matrix4x4 XROTATION_MAT_0DEG = new Matrix4x4(new Vector4(1, 0, 0, 0),
-																			new Vector4(0, 1, 0, 0),
-																			new Vector4(0, 0, 1, 0),
-																			new Vector4(0, 0, 0, 1));
+		public static readonly Matrix4x4 XROTATION_MAT__0DEG = new Matrix4x4(  new Vector4( 1,  0,  0,  0),
+																			   new Vector4( 0,  1,  0,  0),
+																			   new Vector4( 0,  0,  1,  0),
+																			   new Vector4( 0,  0,  0,  1));
 		//90度
-		public static readonly Matrix4x4 XROTATION_MAT__90DEG = new Matrix4x4(new Vector4(1, 0, 0, 0),
-																			  new Vector4(0, 0, 1, 0),
-																			  new Vector4(0, -1, 0, 0),
-																			  new Vector4(0, 0, 0, 1));
+		public static readonly Matrix4x4 XROTATION_MAT__90DEG = new Matrix4x4( new Vector4( 1,  0,  0,  0),
+																			   new Vector4( 0,  0,  1,  0),
+																			   new Vector4( 0, -1,  0,  0),
+																			   new Vector4( 0,  0,  0,  1));
 		//180度
-		public static readonly Matrix4x4 XROTATION_MAT__180DEG = new Matrix4x4(new Vector4(1, 0, 0, 0),
-																			   new Vector4(0, -1, 0, 0),
-																			   new Vector4(0, 0, -1, 0),
-																			   new Vector4(0, 0, 0, 1));
+		public static readonly Matrix4x4 XROTATION_MAT__180DEG = new Matrix4x4(new Vector4( 1,  0,  0,  0),
+																			   new Vector4( 0, -1,  0,  0),
+																			   new Vector4( 0,  0, -1,  0),
+																			   new Vector4( 0,  0,  0,  1));
 		//270度
-		public static readonly Matrix4x4 XROTATION_MAT__270DEG = new Matrix4x4(new Vector4(1, 0, 0, 0),
-																			   new Vector4(0, 0, -1, 0),
-																			   new Vector4(0, 1, 0, 0),
-																			   new Vector4(0, 0, 0, 1));
+		public static readonly Matrix4x4 XROTATION_MAT__270DEG = new Matrix4x4(new Vector4( 1,  0,  0,  0),
+																			   new Vector4( 0,  0, -1,  0),
+																			   new Vector4( 0,  1,  0,  0),
+																			   new Vector4( 0,  0,  0,  1));
 
 		//eFoldTypeに従ってラジアンを変換する
 		public static float ConvertRadiansByFoldType(in float radians, in Origami_Fold.eFoldType type)
