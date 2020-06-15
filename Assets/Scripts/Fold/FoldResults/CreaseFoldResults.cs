@@ -11,28 +11,28 @@ namespace Origami_Result
         //頂点
         public readonly Vector3 Vertex;
 
-        //この頂点を持ち、折らない側のメッシュ
-        public readonly OrigamiMesh NonFoldMesh;
+        //この頂点を持ち、折り目の始点から見て右側のメッシュ
+        public readonly OrigamiMesh RightMesh;
         
         //NonFoldMeshが有する頂点の添字
-        public readonly int NonFoldIdx;
+        public readonly int RightIdx;
 
-        //この頂点を持ち、折る側のメッシュ
-        public readonly OrigamiMesh FoldMesh;
+        //この頂点を持ち、折り目の始点から見て左側のメッシュ
+        public readonly OrigamiMesh LeftMesh;
 
         //FoldMeshが有する頂点の添字
-        public readonly int FoldIdx;
+        public readonly int LeftIdx;
 
 
-        public SplitMeshInfo(in Vector3 vertex, in OrigamiMesh nonFoldMesh, in int nonFoldIdx, in OrigamiMesh foldMesh, in int foldIdx)
+        public SplitMeshInfo(in Vector3 vertex, in OrigamiMesh rightMesh, in int rightIdx, in OrigamiMesh leftMesh, in int leftIdx)
         {
             Vertex = vertex;
             
-            NonFoldMesh = nonFoldMesh;
-            NonFoldIdx = nonFoldIdx;
+            RightMesh = rightMesh;
+            RightIdx = rightIdx;
 
-            FoldMesh = foldMesh;
-            FoldIdx = foldIdx;
+            LeftMesh = leftMesh;
+            LeftIdx = leftIdx;
         }
     }
 
@@ -156,7 +156,7 @@ namespace Origami_Result
         {
             FOLD_TYPE = type;
 
-            var vertices = crease.MeshVertices;
+            var vertices = crease.Vertices;
 
             //直線ベクトルの長さを求める
             float magnitude = creaseVec.sqrMagnitude;

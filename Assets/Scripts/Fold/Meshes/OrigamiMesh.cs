@@ -16,6 +16,9 @@ namespace Origami_Mesh
         //public int FoldLayer { get; private set; }
         public int FoldLayer { get => m_vertices.Layers[0]; }
 
+        // 折り目と接している頂点の参照を保管する配列
+        private CreaseVertex[] m_touchingCreaseVertices = new CreaseVertex[3] { null, null, null };
+
         /// <summary>
         /// コンストラクタ
         /// </summary>
