@@ -7,163 +7,6 @@ using System.Linq;
 //折紙用のメッシュ関連をまとめたソースファイル
 namespace Origami_Mesh
 {
-
-    public interface IFoldMeshCallbacks
-    {
-        void OnEndFold();
-    }
-
-    //折り紙のメッシュで使う頂点、レイヤー情報、折り目と接しているフラグという3つの情報を持つ
-    public readonly struct MeshVertex
-    {
-        public readonly Vector3 Vertex;
-        public readonly int Layer;
-
-        public readonly bool IsConnectedToCrease;
-
-        public MeshVertex(in Vector3 vx, in int l, bool isConnectedToCrease)
-        {
-            Vertex = vx;
-            Layer = l;
-            IsConnectedToCrease = isConnectedToCrease;
-        }
-    }
-
-    //上のMeshVertexをMeshクラスで扱いやすいようにそれぞれ分解したリストで持ち、管理する
-    public class MeshVertices
-    {
-        private Vector3[] m_vertices;
-
-        public Vector3[] GetMeshVertices()
-        {
-            return new Vector3[3] { m_vertices[0], m_vertices[2], m_vertices[4]};
-        }
-
-        public void setVertices(Mesh mesh) => mesh.vertices = m_vertices;
-
-        //頂点の値が更新された際に呼ばれるデリゲートの型
-        public delegate void OnUpdateVertex(in Vector3 vertex);
-
-        //各頂点の値が更新される時に呼ばれるデリゲート
-        private OnUpdateVertex[] m_onupdateVertices;
-
-        public void AddUpdateVertexEventAt(in int idx, OnUpdateVertex updateVertex)
-        {
-            if (0 > idx || m_onupdateVertices.Length <= idx)
-            {
-                Debug.LogError($"idx is invalid idx={idx}");
-                throw new System.ArgumentOutOfRangeException();
-            }
-
-            m_onupdateVertices[idx] += updateVertex;
-        }
-
-        public void RemoveUpdateVertexEventAt(in int idx, OnUpdateVertex updateVertex)
-        {
-            if (0 > idx || m_onupdateVertices.Length <= idx)
-            {
-                Debug.LogError($"idx is invalid idx={idx}");
-                throw new System.ArgumentOutOfRangeException();
-            }
-
-            m_onupdateVertices[idx] -= updateVertex;
-        }
-
-        public void EmptyUpdateVertexEventAt(in int idx)
-        {
-            if (0 > idx || m_onupdateVertices.Length <= idx)
-            {
-                Debug.LogError($"idx is invalid idx={idx}");
-                throw new System.ArgumentOutOfRangeException();
-            }
-
-            m_onupdateVertices[idx] = null;
-        }
-
-        //インデクサ
-        // 現状の仕様ではポリゴンの表と裏で値が同じ頂点を用いているため、i*2でアクセスする
-        public Vector3 this[int i]
-        {
-            get
-            {
-                return m_vertices[i * 2];
-            }
-            set
-            {
-                int idx = i * 2;
-                m_vertices[idx] = m_vertices[idx + 1] = value;
-                m_onupdateVertices[i]?.Invoke(in value);
-            }
-        }
-
-        private List<int> m_layers;
-        public List<int> Layers => m_layers;
-
-        private List<bool> m_connectedList;
-        public List<bool> ConnectedToCreaseList => m_connectedList;
-
-        public readonly int Size;
-
-        public MeshVertices(in Vector3[] vertices, in IEnumerable<int> layers, in IEnumerable<bool> connected, int size)
-        {
-            m_layers = new List<int>(size);
-            m_layers.AddRange(layers);
-
-            m_connectedList = new List<bool>(size);
-            m_connectedList.AddRange(connected);
-
-            m_onupdateVertices = new OnUpdateVertex[size];
-
-            m_vertices = new Vector3[size * 2];
-            //同じ値の頂点は偶数と奇数に分ける
-            for (int i = 0; i < size; ++i)
-            {
-                this[i] = vertices[i];
-            }
-
-            Size = size;
-        }
-
-        public void SetMeshVertexAt(int idx, in Vector3 vx, in int layer)
-        {
-            if (0 > idx || Size <= idx)
-            {
-                throw new System.ArgumentOutOfRangeException();
-            }
-
-            this[idx] = vx;
-            m_layers[idx] = layer;
-        }
-
-        public void SetMeshVertexConnectedFlag(int idx, bool isConnected)
-        {
-            if (0 > idx || Size <= idx)
-            {
-                throw new System.ArgumentOutOfRangeException();
-            }
-
-            m_connectedList[idx] = isConnected;
-        }
-
-        public MeshVertex GetMeshVertexAt(in int idx)
-        {
-            if (0 > idx || Size <= idx)
-            {
-                throw new System.ArgumentOutOfRangeException();
-            }
-
-            return new MeshVertex(this[idx], m_layers[idx], m_connectedList[idx]);
-        }
-
-        public void ResetConnectionFlags()
-        {
-            for (int i = 0; i < m_connectedList.Count; ++i)
-            {
-                m_connectedList[i] = false;
-            }
-        }
-    }
-
     //折り紙と折り目のクラスを汎化させたクラス
     public abstract class OrigamiBase
     {
@@ -191,7 +34,7 @@ namespace Origami_Mesh
         /// 定数
         /// </summary>
 
-        //代入するUV値のデフォルト値を保持する. 多分テクスチャ作りで失敗したと思うのだが、0fに設定するとポリゴンの辺の部分が赤くなるので0.1fとしている
+        //代入するUV値のデフォルト値を保持する。0fに設定するとポリゴンのエッジがメッシュの反対側の色となるため、0.1fとしている
         private static readonly List<Vector2> m_OrigamiUV = new List<Vector2> { new Vector2(0.1f, 0.1f), new Vector2(0.7f, 0.7f), new Vector2(0.1f, 0.2f), 
                                                                                 new Vector2(0.7f, 0.9f), new Vector2(0.2f, 0.2f), new Vector2(0.9f, 0.9f) };
 
@@ -301,7 +144,6 @@ namespace Origami_Mesh
                 m_vertices[0] = ver1;
                 m_vertices[1] = ver2;
                 m_vertices[2] = ver3;
-
             }
 
             //値の代入と再計算

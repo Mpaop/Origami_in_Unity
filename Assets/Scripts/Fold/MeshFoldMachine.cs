@@ -18,6 +18,9 @@ namespace Origami_Fold
 		//折紙を構成する全てのメッシュを保持するリスト
 		private List<OrigamiMesh> m_AllOrigamiMeshGroup;
 
+		// 折り紙を構成する頂点を管理するクラス
+		private MeshVertices m_vertices;
+
 		public IReadOnlyList<OrigamiMesh> AllOrigamiMeshes => m_AllOrigamiMeshGroup;
 		//折紙のメッシュの内折る側のメッシュを保持するリスト
 		private List<OrigamiMesh> m_OrigamiFoldGroup;
