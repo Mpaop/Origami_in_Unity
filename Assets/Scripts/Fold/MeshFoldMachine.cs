@@ -99,17 +99,17 @@ namespace Origami_Fold
 			return (1.0f - t) * val1 + t * val2;
 		}
 
-		private void UpdateIfFurtherFromPoint(in Vector3 basePoint, in Vector3 vertexToCompareWith, ref MeshVertex updateVertex, in bool isConnectedToCrease)
+		private void UpdateIfFurtherFromPoint(in Vector3 basePoint, in Vector3 vertexToCompareWith, ref MeshVertexInfo updateVertex, in bool isConnectedToCrease)
         {
 			var dir = updateVertex.Vertex - basePoint;
             var dis = dir.x * dir.x + dir.y * dir.y;
             var compDir = vertexToCompareWith - basePoint;
 			var compDis = compDir.x * compDir.x + compDir.y * compDir.y;
-            if (compDis > dis) updateVertex = new MeshVertex(vertexToCompareWith, updateVertex.Layer, isConnectedToCrease);
+            if (compDis > dis) updateVertex = new MeshVertexInfo(m_vertices, vertexToCompareWith, updateVertex.Layer, isConnectedToCrease);
 		}
 
 		//vertex を closest と furthest と比較し、それぞれ距離がstartPoint により近い/遠い場合は、値を上書きする
-		private static void SetClosestAndFurthestVertices(in Vector3 startPoint, in Vector3 vertex, ref Vector3 closest, ref MeshVertex furthest)
+		private void SetClosestAndFurthestVertices(in Vector3 startPoint, in Vector3 vertex, ref Vector3 closest, ref MeshVertexInfo furthest)
 		{
             var closestDir = closest - startPoint;
             var closestSqrMag = closestDir.x * closestDir.x + closestDir.y * closestDir.y;
@@ -126,7 +126,7 @@ namespace Origami_Fold
 
             if (vSqrMag > furthestSqrMag)
             {
-                furthest = new MeshVertex(vertex, furthest.Layer, furthest.IsConnectedToCrease);
+                furthest = new MeshVertexInfo(m_vertices, vertex, furthest.Layer, furthest.IsConnectedToCrease);
             }
 		}
 
@@ -286,7 +286,7 @@ namespace Origami_Fold
 		}
 
 		//MeshVertexのリストをソートする
-		public MeshVertex[] SortMeshVertexArrayByLayer(in MeshVertex[] array, in eFoldType type)
+		public MeshVertexInfo[] SortMeshVertexArrayByLayer(in MeshVertexInfo[] array, in eFoldType type)
 		{
 			if(type == eFoldType.MoutainFold)
 			{
@@ -312,7 +312,7 @@ namespace Origami_Fold
 			return new OrigamiMesh(GetVerticesSortedClockwise(pt1, pt2, pt3), isFacingUp, layer, isConnectedToCrease, m_MaterialPath, MeshParent);
 		}
 
-		public OrigamiMesh GenerateOrigamiMesh(OrigamiMesh mesh, in MeshVertex pt1, in MeshVertex pt2, in MeshVertex pt3)
+		public OrigamiMesh GenerateOrigamiMesh(OrigamiMesh mesh, in MeshVertexInfo pt1, in MeshVertexInfo pt2, in MeshVertexInfo pt3)
 		{
 			var sorted = GetVerticesSortedClockwise(pt1, pt2, pt3);
 			return new OrigamiMesh(sorted.Select((x) => (x.Vertex)).ToArray(), mesh.IsFacingUp, mesh.FoldLayer, sorted.Select((x) => x.IsConnectedToCrease), m_MaterialPath, MeshParent);
@@ -452,7 +452,7 @@ namespace Origami_Fold
 		}
 
 		//OrigamiMeshで、connectedToMeshフラグを持っていたかったため
-		public static MeshVertex[] GetVerticesSortedClockwise(MeshVertex vec1, MeshVertex vec2, MeshVertex vec3)
+		public static MeshVertexInfo[] GetVerticesSortedClockwise(MeshVertexInfo vec1, MeshVertexInfo vec2, MeshVertexInfo vec3)
 		{
 			var vec21 = vec2.Vertex - vec1.Vertex;
 			var vec31 = vec3.Vertex - vec1.Vertex;
@@ -462,16 +462,16 @@ namespace Origami_Fold
 
 			if(cross > 0)
 			{
-				return new MeshVertex[3] { vec1, vec3, vec2 };
+				return new MeshVertexInfo[3] { vec1, vec3, vec2 };
 			}
 			else
 			{
-				return new MeshVertex[3] { vec1, vec2, vec3 };
+				return new MeshVertexInfo[3] { vec1, vec2, vec3 };
 			}
 		}
 
 		//折り目で使う4つの座標が四角として扱えるように並べ替える
-		private static MeshVertex[] GetCreaseOrderedVertices(MeshVertex mVec1, MeshVertex mVec2, MeshVertex mVec3, MeshVertex mVec4)
+		private static MeshVertexInfo[] GetCreaseOrderedVertices(MeshVertexInfo mVec1, MeshVertexInfo mVec2, MeshVertexInfo mVec3, MeshVertexInfo mVec4)
 		{
 			Vector3 vec1 = mVec1.Vertex, vec2 = mVec2.Vertex, vec3 = mVec3.Vertex, vec4 = mVec4.Vertex;
 
@@ -505,19 +505,19 @@ namespace Origami_Fold
                 var dot2 = Vector3.Dot(vec21, vec41);
 
 				//vec3がvec21とvec41の間にある
-				if(dot1 > dot2) return new MeshVertex[4] { mVec2, mVec1, mVec4, mVec3 };
+				if(dot1 > dot2) return new MeshVertexInfo[4] { mVec2, mVec1, mVec4, mVec3 };
 				//vec4がvec21とvec31の間にある
-				else return new MeshVertex[4] { mVec2, mVec1, mVec3, mVec4 };
+				else return new MeshVertexInfo[4] { mVec2, mVec1, mVec3, mVec4 };
 			}
 			//vec31はvec21 より左側にあるが、vec41は右側に場合
 			else if(cross1 > 0 && cross2 <= 0)
 			{
-				return new MeshVertex[4] { mVec1, mVec3, mVec2, mVec4 };
+				return new MeshVertexInfo[4] { mVec1, mVec3, mVec2, mVec4 };
 			}
 			//vec31はvec21 より右側にあるが、vec41は左側に場合
 			else if(cross1 <= 0 && cross2 > 0)
 			{
-				return new MeshVertex[4] { mVec1, mVec4, mVec2, mVec3 };
+				return new MeshVertexInfo[4] { mVec1, mVec4, mVec2, mVec3 };
 			}
 			//vec31とvec41がvec21 より右側にある場合
 			else
@@ -527,9 +527,9 @@ namespace Origami_Fold
                 var dot2 = Vector3.Dot(vec21, vec41);
 
 				//vec3がvec21とvec41の間にある
-				if(dot1 > dot2) return new MeshVertex[4] { mVec1, mVec2, mVec3, mVec4 };
+				if(dot1 > dot2) return new MeshVertexInfo[4] { mVec1, mVec2, mVec3, mVec4 };
 				//vec4がvec21とvec31の間にある
-				else return new MeshVertex [4] { mVec1, mVec2, mVec4, mVec3 };
+				else return new MeshVertexInfo [4] { mVec1, mVec2, mVec4, mVec3 };
 			}
 		}
 
@@ -764,7 +764,7 @@ namespace Origami_Fold
         /// </summary>
         /// <param name="baseCreasePoint">折り目の線の座標1</param>
         private bool SplitMesh(in Vector3 startPoint, in Vector3 creaseDir, in Vector3 creaseDirNorm, in List<Vector3> startPointList, in int innerLayer, in int outerLayer, 
-							   out Vector3 outClosestIntersection, out MeshVertex[] outFurthestIntersectionsPerLayerOnCrease, out MeshVertex[] outFurthestAlteredIntersections, out List<SplitMeshInfo> outSplitInfo)
+							   out Vector3 outClosestIntersection, out MeshVertexInfo[] outFurthestIntersectionsPerLayerOnCrease, out MeshVertexInfo[] outFurthestAlteredIntersections, out List<SplitMeshInfo> outSplitInfo)
 		{			
 			//新たに追加するメッシュのリスト
 			var newMeshList = new List<OrigamiMesh>();
@@ -773,15 +773,15 @@ namespace Origami_Fold
 
 			outClosestIntersection = startPoint + creaseDir;
 			int layerDif = GetIntegerDif(innerLayer, outerLayer) + 1;
-			outFurthestIntersectionsPerLayerOnCrease = new MeshVertex[layerDif];
-			outFurthestAlteredIntersections = new MeshVertex[layerDif];
+			outFurthestIntersectionsPerLayerOnCrease = new MeshVertexInfo[layerDif];
+			outFurthestAlteredIntersections = new MeshVertexInfo[layerDif];
 
 			int inc = innerLayer > outerLayer ? 1 : -1;
 
 			for(int i = 0; i < layerDif; ++i)
 			{
-				outFurthestIntersectionsPerLayerOnCrease[i] = new MeshVertex(startPoint, outerLayer + inc * i, true);
-				outFurthestAlteredIntersections[i] = new MeshVertex(startPoint, outerLayer + inc * i, true);
+				outFurthestIntersectionsPerLayerOnCrease[i] = new MeshVertexInfo(m_vertices, startPoint, outerLayer + inc * i, true);
+				outFurthestAlteredIntersections[i] = new MeshVertexInfo(m_vertices, startPoint, outerLayer + inc * i, true);
 			}
 
 			// 辺が折り目と重なっているメッシュは折り目の方向ベクトルが二つのメッシュのちょうど間を通っているのか、紙の端に接しているのかが判断できないので、異なるロジックでチェックする
@@ -831,9 +831,9 @@ namespace Origami_Fold
 
 					if (resIsZero.Count == 2)
 					{
-						MeshVertex vx1 = new MeshVertex(vertices[resIsZero[0]], mesh.FoldLayer, true);
-						MeshVertex vx2 = new MeshVertex(vertices[resIsZero[1]], mesh.FoldLayer, true);
-						MeshVertex vx3 = new MeshVertex(vertices[resIsNonZero[0]], mesh.FoldLayer, false);
+						MeshVertexInfo vx1 = new MeshVertexInfo(m_vertices, vertices[resIsZero[0]], mesh.FoldLayer, true);
+						MeshVertexInfo vx2 = new MeshVertexInfo(m_vertices, vertices[resIsZero[1]], mesh.FoldLayer, true);
+						MeshVertexInfo vx3 = new MeshVertexInfo(m_vertices, vertices[resIsNonZero[0]], mesh.FoldLayer, false);
 						
 						int dif = GetIntegerDif(mesh.FoldLayer, outerLayer);
 
@@ -860,10 +860,10 @@ namespace Origami_Fold
 						if(GetIntersectionPointForDirections(startPoint, creaseDir, vertices[resIsNonZero[1]], vecOfVertices, vertices[resIsNonZero[1]].z, out Vector3 midPoint))
                         {
 							//交点は折り目を元に生成しているため、必ず繋がっている
-							var mid = new MeshVertex(midPoint, mesh.FoldLayer, true);
-							var vx1 = new MeshVertex(vertices[resIsZero[0]], mesh.FoldLayer, true);
-							var vx2 = new MeshVertex(vertices[resIsNonZero[0]], mesh.FoldLayer, false);
-							var vx3 = new MeshVertex(vertices[resIsNonZero[1]], mesh.FoldLayer, false);
+							var mid = new MeshVertexInfo(m_vertices, midPoint, mesh.FoldLayer, true);
+							var vx1 = new MeshVertexInfo(m_vertices, vertices[resIsZero[0]], mesh.FoldLayer, true);
+							var vx2 = new MeshVertexInfo(m_vertices, vertices[resIsNonZero[0]], mesh.FoldLayer, false);
+							var vx3 = new MeshVertexInfo(m_vertices, vertices[resIsNonZero[1]], mesh.FoldLayer, false);
 
                             // 折った時に折り目が重なるとZファイティングを起こすため、それをずらすための頂点の候補を算出する
                             // もし、ここで判定がfalseとなった場合、折る側にあるメッシュの範囲が狭すぎることを意味するため、その時点でfalseを返して分割を終了する
@@ -936,8 +936,8 @@ namespace Origami_Fold
 					#region DivideToThreeTriangles
 					//線がメッシュのどの辺と交わっているのかを調べる
 					//外積の結果の正負によってそれぞれの頂点を分ける
-					List<MeshVertex> positiveResList = new List<MeshVertex>(2);
-					List<MeshVertex> negativeResList = new List<MeshVertex>(2);
+					List<MeshVertexInfo> positiveResList = new List<MeshVertexInfo>(2);
+					List<MeshVertexInfo> negativeResList = new List<MeshVertexInfo>(2);
 
 					//折り目の左右で、頂点が一つしかない側を調べたいため、添字も格納する。一つしかない側が欲しいため、二つある側の添字はどちらでもよいものとする
 					int negIdx = -1, posIdx = -1;
@@ -968,28 +968,28 @@ namespace Origami_Fold
 					}
 
 					//線が三角を横切る際、一方に座標が二つ、反対側に座標が一つとなるので、上で取得したリストから得る
-					MeshVertex[] verticesOfNotSplitSegment;
-					MeshVertex vertexOfSplitSegments;
+					MeshVertexInfo[] verticesOfNotSplitSegment;
+					MeshVertexInfo vertexOfSplitSegments;
 
 					//頂点が一点しかない側の添字
 					int idxOfSplitSegments;
 
 					if (positiveResList.Count > negativeResList.Count)
 					{
-						verticesOfNotSplitSegment = new MeshVertex[2] { positiveResList[0], positiveResList[1] };
+						verticesOfNotSplitSegment = new MeshVertexInfo[2] { positiveResList[0], positiveResList[1] };
 						vertexOfSplitSegments = negativeResList[0];
 						idxOfSplitSegments = negIdx;
 					}
 					else
 					{
-						verticesOfNotSplitSegment = new MeshVertex[2] { negativeResList[0], negativeResList[1] };
+						verticesOfNotSplitSegment = new MeshVertexInfo[2] { negativeResList[0], negativeResList[1] };
 						vertexOfSplitSegments = positiveResList[0];
 						idxOfSplitSegments = posIdx;
 					}
 
 					//その交点を求める
 					//交点を格納する配列
-					MeshVertex[] midPoints = new MeshVertex[2];
+					MeshVertexInfo[] midPoints = new MeshVertexInfo[2];
 
                     // 折った時に折り目が重なるとZファイティングを起こすため、それをずらすための頂点の候補を算出する
                     // もし、ここで判定がfalseとなった場合、折る側にあるメッシュの範囲が狭すぎることを意味するため、その時点でfalseを返して分割を終了する
@@ -1004,7 +1004,7 @@ namespace Origami_Fold
 
 						GetIntersectionPointForDirections(startPoint, creaseDir, vertexOfSplitSegments.Vertex, dir, vertexOfSplitSegments.Vertex.z, out Vector3 midPoint);
 
-						midPoints[i] = new MeshVertex(midPoint, mesh.FoldLayer, true);
+						midPoints[i] = new MeshVertexInfo(m_vertices, midPoint, mesh.FoldLayer, true);
 
 						SetClosestAndFurthestVertices(startPoint, midPoint, ref outClosestIntersection, ref outFurthestIntersectionsPerLayerOnCrease[dif]);
 
@@ -1024,9 +1024,9 @@ namespace Origami_Fold
 					OrigamiMesh mesh1, mesh2;
 
 					//更新する前にフラグをリセット
-					vertexOfSplitSegments = new MeshVertex(vertexOfSplitSegments.Vertex, mesh.FoldLayer, false);
-					verticesOfNotSplitSegment[0] = new MeshVertex(verticesOfNotSplitSegment[0].Vertex, mesh.FoldLayer, false);
-					verticesOfNotSplitSegment[1] = new MeshVertex(verticesOfNotSplitSegment[1].Vertex, mesh.FoldLayer, false);
+					vertexOfSplitSegments = new MeshVertexInfo(m_vertices, vertexOfSplitSegments.Vertex, mesh.FoldLayer, false);
+					verticesOfNotSplitSegment[0] = new MeshVertexInfo(m_vertices, verticesOfNotSplitSegment[0].Vertex, mesh.FoldLayer, false);
+					verticesOfNotSplitSegment[1] = new MeshVertexInfo(m_vertices, verticesOfNotSplitSegment[1].Vertex, mesh.FoldLayer, false);
 
 					//mesh1はどちらの場合でも変わらないので決め打ち
 					mesh1 = GenerateOrigamiMesh(mesh, midPoints[0], verticesOfNotSplitSegment[0], midPoints[1]);
@@ -1382,7 +1382,7 @@ namespace Origami_Fold
 
 		//折った際、折り目に接している辺が折り目に沿うように調整するためのデータを算出
 		private void SetAdjustmentResults(in Vector3 closestIntersection, in Vector3 startPoint, in Vector3 endPoint, 
-										  in MeshVertex[] endPointsPerLayer, in MeshVertex[] alteredVerticesPerLayer, 
+										  in MeshVertexInfo[] endPointsPerLayer, in MeshVertexInfo[] alteredVerticesPerLayer, 
 										  in int oldInnerLayer, in int oldOuterLayer, in float targetRad, in Matrix4x4 matZ, in eFoldType type, bool isSplitOnEndPoints)
 		{
 			//リサイズ
@@ -1586,7 +1586,7 @@ namespace Origami_Fold
 
 			//メッシュを二回分割し、折り目を作る
 			if (SplitMesh(p1, outDir, outDirNorm, cachedStartPoints, prefoldInfo.innerLayer, prefoldInfo.outerLayer, 
-						  out Vector3 outClosest, out MeshVertex[] outFurthestIntersectionsPerLayerOnCrease, out MeshVertex[] outFurthestAlteredIntersections, out splitInfoList))
+						  out Vector3 outClosest, out MeshVertexInfo[] outFurthestIntersectionsPerLayerOnCrease, out MeshVertexInfo[] outFurthestAlteredIntersections, out splitInfoList))
             {				
 				//ずれや余分な演算を減らすために、ここで各頂点の値を調整
 				for(int i = 0; i < outFurthestAlteredIntersections.Length; ++i)
@@ -1594,7 +1594,7 @@ namespace Origami_Fold
                     //頂点が折られた後の座標を取得
                     var mid = OrigamiUtility.GetPerpendicularIntersectionPoint(outFurthestAlteredIntersections[i].Vertex, p1, outDir);
                     var foldedVec = OrigamiBase.GetRotatedVector3(outFurthestAlteredIntersections[i].Vertex, mid, OrigamiUtility.XROTATION_MAT__180DEG, m_MatZ);
-					outFurthestAlteredIntersections[i] = new MeshVertex(foldedVec, outFurthestAlteredIntersections[i].Layer, outFurthestAlteredIntersections[i].IsConnectedToCrease);
+					outFurthestAlteredIntersections[i] = new MeshVertexInfo(m_vertices, foldedVec, outFurthestAlteredIntersections[i].Layer, outFurthestAlteredIntersections[i].IsConnectedToCrease);
 				}
 
 				//折り目を分割する

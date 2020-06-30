@@ -150,8 +150,6 @@ namespace OrigamiDemo
 					if (m_EndPhaseCallBack != null) m_EndPhaseCallBack();
 				}
 			}
-
-
 		}
 	}
 

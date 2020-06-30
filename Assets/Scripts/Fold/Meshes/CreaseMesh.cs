@@ -144,7 +144,7 @@ namespace Origami_Mesh
             }
         }
 
-        public MeshVertex GetMeshVertexAt(eCreaseVertices ver)
+        public MeshVertexInfo GetMeshVertexAt(eCreaseVertices ver)
         {
             //      アクセスする折り目の図
             //      Crease0:Idx0 --------------------- Crease0:Idx1
@@ -244,7 +244,7 @@ namespace Origami_Mesh
             return crease;
         }
 
-        public void UpdateCreaseVertices(in MeshVertex[] vertices)
+        public void UpdateCreaseVertices(in MeshVertexInfo[] vertices)
         {
             if (m_vertices.Length != vertices.Length)
             {

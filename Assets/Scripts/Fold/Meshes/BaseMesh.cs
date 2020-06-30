@@ -15,7 +15,7 @@ namespace Origami_Mesh
         /// </summary>
 
         //折紙の元となるメッシュ
-        protected Mesh m_Mesh;
+        protected Mesh m_mesh;
 
         //折紙のメッシュのオブジェクトの参照
         private GameObject m_meshObject = null;
@@ -35,14 +35,14 @@ namespace Origami_Mesh
         /// </summary>
 
         //代入するUV値のデフォルト値を保持する。0fに設定するとポリゴンのエッジがメッシュの反対側の色となるため、0.1fとしている
-        private static readonly List<Vector2> m_OrigamiUV = new List<Vector2> { new Vector2(0.1f, 0.1f), new Vector2(0.7f, 0.7f), new Vector2(0.1f, 0.2f), 
+        private static readonly List<Vector2> m_origamiUV = new List<Vector2> { new Vector2(0.1f, 0.1f), new Vector2(0.7f, 0.7f), new Vector2(0.1f, 0.2f), 
                                                                                 new Vector2(0.7f, 0.9f), new Vector2(0.2f, 0.2f), new Vector2(0.9f, 0.9f) };
 
         //代入するポリゴン座標の描画順を保持する。表向きの場合
-        private static readonly List<int> m_OrigamiTriangles = new List<int> { 0, 2, 4, 5, 3, 1 };
+        private static readonly List<int> m_origamiTriangles = new List<int> { 0, 2, 4, 5, 3, 1 };
 
         //代入するポリゴン座標の描画順を保持する。裏向きの場合
-        private static readonly List<int> m_OrigamiTrianglesReversed = new List<int> { 4, 2, 0, 1, 3, 5 };
+        private static readonly List<int> m_origamiTrianglesReversed = new List<int> { 4, 2, 0, 1, 3, 5 };
 
         //添字参照用のリスト
         private List<int> m_triangles;
@@ -77,11 +77,11 @@ namespace Origami_Mesh
 
             if (facing)
             {
-                m_triangles = m_OrigamiTriangles;
+                m_triangles = m_origamiTriangles;
             }
             else
             {
-                m_triangles = m_OrigamiTrianglesReversed;
+                m_triangles = m_origamiTrianglesReversed;
             }
 
             if (!m_material)
@@ -90,12 +90,12 @@ namespace Origami_Mesh
             }
 
             //メッシュを生成
-            m_Mesh = new Mesh();
+            m_mesh = new Mesh();
 
             //メッシュを付与するゲームオブジェクトを生成
             m_meshObject = new GameObject();
             m_meshObject.AddComponent<MeshRenderer>().material = m_material;
-            m_meshObject.AddComponent<MeshFilter>().mesh = m_Mesh;
+            m_meshObject.AddComponent<MeshFilter>().mesh = m_mesh;
             m_meshObject.transform.SetParent(parent);
 
             //メッシュを三角形として初期化
@@ -138,7 +138,7 @@ namespace Origami_Mesh
         /// <param name="vertices">メッシュの頂点</param>
         protected void UpdateOrigamiTriangleMesh(in Vector3 ver1, in Vector3 ver2, in Vector3 ver3)
         {
-            m_Mesh.Clear();
+            m_mesh.Clear();
 
             {
                 m_vertices[0] = ver1;
@@ -147,36 +147,36 @@ namespace Origami_Mesh
             }
 
             //値の代入と再計算
-            m_vertices.setVertices(m_Mesh);
-            m_Mesh.SetUVs(0, m_OrigamiUV);
-            m_Mesh.SetTriangles(m_triangles, 0, true);
+            m_vertices.setVertices(m_mesh);
+            m_mesh.SetUVs(0, m_origamiUV);
+            m_mesh.SetTriangles(m_triangles, 0, true);
 
-            m_Mesh.RecalculateNormals();
+            m_mesh.RecalculateNormals();
         }
 
         public void UpdateOrigamiTriangleMesh(in Vector3[] vertices)
         {
             if (IsFacingUp)
             {
-                m_triangles = m_OrigamiTriangles;
+                m_triangles = m_origamiTriangles;
             }
             else
             {
-                m_triangles = m_OrigamiTrianglesReversed;
+                m_triangles = m_origamiTrianglesReversed;
             }
 
             this.UpdateOrigamiTriangleMesh(vertices[0], vertices[1], vertices[2]);
         }
 
-        public void UpdateOrigamiTriangleMesh(in IEnumerable<MeshVertex> vertices)
+        public void UpdateOrigamiTriangleMesh(in IEnumerable<MeshVertexInfo> vertices)
         {
             if (IsFacingUp)
             {
-                m_triangles = m_OrigamiTriangles;
+                m_triangles = m_origamiTriangles;
             }
             else
             {
-                m_triangles = m_OrigamiTrianglesReversed;
+                m_triangles = m_origamiTrianglesReversed;
             }
 
             int i = 0;
