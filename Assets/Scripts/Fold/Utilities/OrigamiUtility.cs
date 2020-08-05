@@ -51,7 +51,7 @@ namespace Origami_Utility
 		{
 			float rad;
 
-			if(type == Origami_Fold.eFoldType.MoutainFold)
+			if (type == Origami_Fold.eFoldType.MoutainFold)
 			{
 				rad = radians;
 			}
@@ -114,7 +114,7 @@ namespace Origami_Utility
 		public static Vector3 GetPerpendicularIntersectionPoint(in Vector3 point, in Vector3 creasePoint, in Vector3 creaseVec, in float sqrMagnitude)
 		{
 			//0除算を避けたいのでチェック
-			if(sqrMagnitude == 0.0f) return Vector3.zero;
+			if (sqrMagnitude == 0.0f) return Vector3.zero;
 
 			//直線ベクトルに対し、(交点-変換する頂点)を内積すると、垂直であるため0となる。
 			//また交点は直線の始点から直線ベクトル(=終点-始点)の間にあるため、始点+直線ベクトル*係数tと表せる
@@ -131,9 +131,9 @@ namespace Origami_Utility
 			var mag = creaseVec.sqrMagnitude;
 			return GetPerpendicularIntersectionPoint(point, creasePoint, creaseVec, mag);
 		}
-		
+
 		//スワップ
-		public static void Swap<T>(ref T val1, ref T val2) 
+		public static void Swap<T>(ref T val1, ref T val2)
 		{
 			var temp = val1;
 			val1 = val2;

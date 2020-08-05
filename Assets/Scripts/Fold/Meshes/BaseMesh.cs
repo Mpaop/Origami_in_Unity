@@ -7,13 +7,13 @@ using System.Linq;
 namespace Origami_Mesh
 {
 
-    public interface IFoldMeshCallbacks
-    {
-        void OnEndFold();
-    }
+	public interface IFoldMeshCallbacks
+	{
+		void OnEndFold();
+	}
 
-    //折り紙のメッシュで使う頂点、レイヤー情報、折り目と接しているフラグという3つの情報を持つ
-    public readonly struct MeshVertex
+	//折り紙のメッシュで使う頂点、レイヤー情報、折り目と接しているフラグという3つの情報を持つ
+	public readonly struct MeshVertex
 	{
 		public readonly Vector3 Vertex;
 		public readonly int Layer;
@@ -45,8 +45,8 @@ namespace Origami_Mesh
 		public MeshVertices(in IEnumerable<Vector3> vertices, in IEnumerable<int> layers, in IEnumerable<bool> connected, int size)
 		{
 			m_vertices = new List<Vector3>(size * 2);
-            m_vertices.AddRange(vertices);
-            m_vertices.AddRange(vertices);
+			m_vertices.AddRange(vertices);
+			m_vertices.AddRange(vertices);
 
 			m_layers = new List<int>(size);
 			m_layers.AddRange(layers);
@@ -59,7 +59,7 @@ namespace Origami_Mesh
 
 		public void SetMeshVertexAt(int idx, in Vector3 vx, in int layer)
 		{
-			if(0 > idx || Size <= idx)
+			if (0 > idx || Size <= idx)
 			{
 				throw new System.ArgumentOutOfRangeException();
 			}
@@ -69,16 +69,16 @@ namespace Origami_Mesh
 		}
 
 		public void SetMeshVertexConnectedFlag(int idx, bool isConnected)
-        {
-            if (0 > idx || Size <= idx)
-            {
-                throw new System.ArgumentOutOfRangeException();
-            }
+		{
+			if (0 > idx || Size <= idx)
+			{
+				throw new System.ArgumentOutOfRangeException();
+			}
 		}
 
 		public MeshVertex GetMeshVertexAt(in int idx)
 		{
-			if(0 > idx || Size <= idx)
+			if (0 > idx || Size <= idx)
 			{
 				throw new System.ArgumentOutOfRangeException();
 			}
@@ -148,18 +148,18 @@ namespace Origami_Mesh
 		/// <param name="parent">オブジェクトの親</param>
 		protected OrigamiBase(in IEnumerable<Vector3> vertices, in IEnumerable<int> layers, IEnumerable<bool> connected, bool facing, in string materialPath, in Transform parent)
 		{
-            if (3 != vertices.Count())
-            {
-                Debug.LogError("Vertices count is wrong");
-                return;
-            }
+			if (3 != vertices.Count())
+			{
+				Debug.LogError("Vertices count is wrong");
+				return;
+			}
 
-            if (3 != layers.Count())
-            {
-                Debug.LogError("Layers count is wrong");
-                return;
-            }
-			
+			if (3 != layers.Count())
+			{
+				Debug.LogError("Layers count is wrong");
+				return;
+			}
+
 			IsFacingUp = facing;
 
 			m_vertices = new MeshVertices(vertices, layers, connected, vertices.Count());
@@ -173,7 +173,7 @@ namespace Origami_Mesh
 				m_triangles = m_OrigamiTrianglesReversed;
 			}
 
-			if(!m_material)
+			if (!m_material)
 			{
 				m_material = Resources.Load<Material>(materialPath);
 			}
@@ -220,10 +220,10 @@ namespace Origami_Mesh
 
 		public static Vector3 GetRotatedVector3_Lerped(in Vector3 origin, in Vector3 target, in Vector3 midpoint, in Vector3 offset, in float t, in Matrix4x4 matX, in Matrix4x4 matZ)
 		{
-				var tempTarget = target;
-				tempTarget.z = origin.z;
-				var lerped = FastLerp(origin, tempTarget, t);
-				return GetRotatedVector3(lerped + offset, midpoint + offset, matX, matZ);
+			var tempTarget = target;
+			tempTarget.z = origin.z;
+			var lerped = FastLerp(origin, tempTarget, t);
+			return GetRotatedVector3(lerped + offset, midpoint + offset, matX, matZ);
 		}
 
 		/// <summary>
@@ -265,24 +265,24 @@ namespace Origami_Mesh
 		}
 
 		public void UpdateOrigamiTriangleMesh(in IEnumerable<MeshVertex> vertices)
-        {
-            if (IsFacingUp)
-            {
-                m_triangles = m_OrigamiTriangles;
-            }
-            else
-            {
-                m_triangles = m_OrigamiTrianglesReversed;
-            }
+		{
+			if (IsFacingUp)
+			{
+				m_triangles = m_OrigamiTriangles;
+			}
+			else
+			{
+				m_triangles = m_OrigamiTrianglesReversed;
+			}
 
 			int i = 0;
-			foreach(var vertex in vertices)
+			foreach (var vertex in vertices)
 			{
 				m_vertices.Vertices[i] = vertex.Vertex;
 				m_vertices.ConnectedToCreaseList[i++] = vertex.IsConnectedToCrease;
 			}
 
-            this.UpdateOrigamiTriangleMesh(m_vertices.Vertices[0], m_vertices.Vertices[1], m_vertices.Vertices[2]);
+			this.UpdateOrigamiTriangleMesh(m_vertices.Vertices[0], m_vertices.Vertices[1], m_vertices.Vertices[2]);
 		}
 
 		public void UpdateOrigamiLayers(in int layer1, in int layer2, in int layer3)
