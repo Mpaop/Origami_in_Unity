@@ -1,62 +1,110 @@
-# 折り紙(メッシュ)をUnityで折るプロジェクト
+# Origami_in_Unity
 
-##### 使用エンジン： Unity (2019.2.19f1)
-
+***
+This is a demo project where we can fold meshes like Origami. <br />
+<br />
+[日本語版Readmeはこちらから](https://github.com/Mpaop/Origami_in_Unity/blob/master/docs/README_JP.md)<br />
+<br />
+<br />
 <img src="https://raw.githubusercontent.com/wiki/Mpaop/Origami_in_Unity/images/fold01.gif" alt="Demo" width="700"/>
-
-#### 動作はFoldDemoSceneにて確認出来ます。（以下、FoldDemoSceneの操作方法)
-     1. シーンをプレイ状態にすると、メッシュが表示されます。
-     2. 画面上でマウスをクリックした状態でドラッグし、折り目となる線をメッシュと重なるように引いてください。
-     3. 引き終えたら、右下にある「折る」というボタンをクリックしてください。メッシュを折る処理が行われます。
-     ※ 何らかの不具合や、メッシュを初期状態に戻したい場合は、右下の「Reset」というボタンをクリックしてください。シーンの再ロードが行われます。
-  
-***
-## ゲームで用いた例
-<img src="https://raw.githubusercontent.com/wiki/Mpaop/Origami_in_Unity/images/demo02.gif" alt="ゲームの使用例" width="600"/>
-
+<br />
+<br />
 ***
 
-## namespaceと各クラスの概要：
+## Requirements
+Unity (2019.2.19f1)  
+<br />
+     
 
-### **1. Origami_Fold**
-  - MeshFoldMachine  
-  メッシュを折るクラス
+## How to play the demo
+
+     1. After cloning the project, play the "FoldDemoScene" in the Scenes folder.  
+     You should see a square mesh in the middle of the screen.  
+     
+     2. You can draw straight lines with your mouse by clicking and dragging on the screen.  
+     Draw a line that goes across the mesh.  
+     
+     3. Press the "Fold" button at the the bottom right corner of the screen. The mesh will start to fold :)  
+     
+     (If something goes wrong or you want to retry folding with a new mesh,  
+      press the "Reset" button at the bottom right of the screen. The scene will be reloaded)
   
-### **2. Origami_Mesh**
-  - OrigamiBase
-  折り紙に用いるメッシュの抽象クラス
-  - OrigamiMesh  
-  折り紙に用いるメッシュのクラス
-  - CreaseMesh  
-  折り目に用いるメッシュのクラス
+***  
+<br />
 
-
-### **3. Origami_Result**
-  - FoldResults  
-  メッシュを折る時に必要となるデータを格納する構造体
-  - OrigamiFoldResults  
-  折り紙メッシュを折る時に必要となるデータを格納する構造体
-  - CreaseFoldResults  
-  折り目メッシュを折る時に必要となるデータを格納する構造体
-
-
-### **4. Origami_Utility**
-  - OrigamiUtility  
-  プロジェクト全般で用いるユーティリティクラス
-
-### **5. Origami_Demo**
-   - MeshCreaseDrawer  
-   デモ用に作成した、折り目の線を引くクラス
+## Gameplay using Origami_in_Unity
+<img src="https://raw.githubusercontent.com/wiki/Mpaop/Origami_in_Unity/images/demo02.gif" alt="Gameplay" width="600"/>
 
 ***
 
-### **今後の課題**
-  - 折り目の調整
-  - 現在はメッシュ単位でデータを管理しているが、メモリを圧迫する原因となるため、頂点など、必要な情報のみを有するクラスに移行する
-  - また、現在は折る度に新しいメッシュが生成されるため、ドローコールが次第に増えていくという問題がある。これも上と同じくデータの管理方法を変えることとし、生成されるメッシュの数をなるべく減らすようにする
-  - 無駄な計算も減らす
+## Descriptions of this project
+If you are interested in using this project, it is advised to first check out "MeshCreaseDrawer.cs" under the Scripts folder.
+The purpose of this class is to draw lines on the screen and call methods of other classes that do the actual folding.  
+
+
+### **Origami_Demo (namespace)**
+This namespace consists of only one class, that is MeshCreaseDrawer. It is made for demonstration purposes, and is not required for folding paper operations.  
+   - **Contents of this namespace:**  
+     - MeshCreaseDrawer
+       - Draws lines on the screen. 
+       - Calls methods of other classes (such as MeshFoldMachine) that does the actual folding.  
+
+### **Origami_Fold (namespace)**
+This namespace has MeshFoldMachine, which is the core module for folding the meshes. This class can be used by creating an instance.
+   - **Contents of this namespace:**  
+     - MeshFoldMachine  
+       - Folds the mesh.  
+       - In the demo, this class receives two points that were used to represent the line on the screen via "InitializeFold". Using them, it divides the meshes along the line. After that, the MeshCreaseDrawer sets the amount of radians it wants the mesh to fold by calling "FoldMeshToAngle." Finally, "EndFold" is called to cleanup whatever it needs to. (The functionality of EndFold is due to change in the future, so I won't go into much detail, sorry)
   
-### **現在確認されている不具合**  
-  - 何度か折っていると折り目のメッシュが回転中にはみ出てしまう
-  - 折り紙を折れないと判定された後に線を引き直すと、正常に動作しない
+### **Origami_Mesh (namespace)**  
+This namespace is a collection of meshes and vertices used by the MeshFoldMachine to fold paper.
+  - **Contents of this namespace:**  
+    - OrigamiBase  
+      - An abstract class of all the meshes. It's main functionalities are to update the Unity Mesh object, as well as return rotated vectors.  
+    - OrigamiMesh  
+      - Mesh class that derives from OrigamiBase. Doesn’t have too many functions of its own but, vertices of this mesh need a little more adjustments during the folding stage, if they are connected to a Crease mesh.  
+    - CreaseMesh  
+      - Mesh class that is used to fill in spaces when folded. Spaces need to be created between Origami meshes in order to avoid Z-fighting. Crease meshes are created in order to avoid meshes "detaching" from the paper. Specifications of the CreaseMesh class are bound to change in the near future.  
+    - Crease
+      - The Crease class exists because crease meshes are handled in pairs for most cases.  
+    - MeshVertex  
+      - MeshVertex is a readonly struct that wraps information we want bundled together for folding meshes.
+    - MeshVertices
+      - Meshvertices is a class that has lists of types that we can combine to create a MeshVertex object. While it may seem convenient to have a single list of MeshVertex objects, it is better to have them separated for working with Unity's Mesh class.
+    - IFoldMeshCallbacks
+      - An interface that defines methods to be used as callbacks.
+
+
+### **Origami_Result (namespace)**  
+This namespace is a collection of structs that are referred to by classes such as the OrigamiMesh class during the folding stage as it contains arithmetic results meant to be used for this purpose.
+  - **Contents of this namespace:**  
+    - FoldResult  
+      - An readonly struct that contains data for a vertex to fold.  
+    - OrigamiFoldResult
+      - A struct that wraps a FoldResult and adds other members to be used for folding (rotating) vertices of OrigamiMesh objects.  
+    - OrigamiFoldResults  
+      - A struct that containts multiple OrigamiFoldResult members. Each member corresponds to a vertex of the mesh it refers to.
+    - CreaseGenerationInfo/CreaseGenerateResults/CreaseFoldResult/CreaseFoldResults  
+      - The folding logic for Crease Meshes are due to change in the near future. Therefore all these structs are bound to be ridden or redesigned.
+    - IFoldResults
+      - An interface to be implemented into FoldResult structs
+
+
+### **Origami_Utility(namespace)**  
+This namespace currently contains OrigamiUtility.
+  - **Contents of this namespace:**  
+    - OrigamiUtility  
+      - A class that provides useful functions.
+
+***
+
+## **Moving Forward**
+  - Fix crease logic.  
+  - Reduce the amount of calculations done per fold.
+  
+***
+
+## **Bugs**  
+  - Sometimes, creases will stick out of the origami. This is currently being worked on.
+  - Sometimes, folding the meshes after being told by the MeshFoldMachine that it is unable to fold causes the meshes to break.
   
