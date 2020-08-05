@@ -26,32 +26,32 @@ namespace Origami_Utility
 		public const float SINCOS_45 = 0.7071068f;
 
 		//0度
-		public static readonly Matrix4x4 XROTATION_MAT__0DEG = new Matrix4x4(  new Vector4( 1,  0,  0,  0),
-																			   new Vector4( 0,  1,  0,  0),
-																			   new Vector4( 0,  0,  1,  0),
-																			   new Vector4( 0,  0,  0,  1));
+		public static readonly Matrix4x4 XROTATION_MAT__0DEG = new Matrix4x4(new Vector4(1, 0, 0, 0),
+																			   new Vector4(0, 1, 0, 0),
+																			   new Vector4(0, 0, 1, 0),
+																			   new Vector4(0, 0, 0, 1));
 		//90度
-		public static readonly Matrix4x4 XROTATION_MAT__90DEG = new Matrix4x4( new Vector4( 1,  0,  0,  0),
-																			   new Vector4( 0,  0,  1,  0),
-																			   new Vector4( 0, -1,  0,  0),
-																			   new Vector4( 0,  0,  0,  1));
+		public static readonly Matrix4x4 XROTATION_MAT__90DEG = new Matrix4x4(new Vector4(1, 0, 0, 0),
+																			   new Vector4(0, 0, 1, 0),
+																			   new Vector4(0, -1, 0, 0),
+																			   new Vector4(0, 0, 0, 1));
 		//180度
-		public static readonly Matrix4x4 XROTATION_MAT__180DEG = new Matrix4x4(new Vector4( 1,  0,  0,  0),
-																			   new Vector4( 0, -1,  0,  0),
-																			   new Vector4( 0,  0, -1,  0),
-																			   new Vector4( 0,  0,  0,  1));
+		public static readonly Matrix4x4 XROTATION_MAT__180DEG = new Matrix4x4(new Vector4(1, 0, 0, 0),
+																			   new Vector4(0, -1, 0, 0),
+																			   new Vector4(0, 0, -1, 0),
+																			   new Vector4(0, 0, 0, 1));
 		//270度
-		public static readonly Matrix4x4 XROTATION_MAT__270DEG = new Matrix4x4(new Vector4( 1,  0,  0,  0),
-																			   new Vector4( 0,  0, -1,  0),
-																			   new Vector4( 0,  1,  0,  0),
-																			   new Vector4( 0,  0,  0,  1));
+		public static readonly Matrix4x4 XROTATION_MAT__270DEG = new Matrix4x4(new Vector4(1, 0, 0, 0),
+																			   new Vector4(0, 0, -1, 0),
+																			   new Vector4(0, 1, 0, 0),
+																			   new Vector4(0, 0, 0, 1));
 
 		//eFoldTypeに従ってラジアンを変換する
 		public static float ConvertRadiansByFoldType(in float radians, in Origami_Fold.eFoldType type)
 		{
 			float rad;
 
-			if(type == Origami_Fold.eFoldType.MoutainFold)
+			if (type == Origami_Fold.eFoldType.MoutainFold)
 			{
 				rad = radians;
 			}
@@ -106,6 +106,34 @@ namespace Origami_Utility
 			return matZ;
 		}
 
+		//疑似外積
+		public static double Cross2DXY(in Vector3 lhs, in Vector3 rhs)
+		{
+			return lhs.x * rhs.y - rhs.x * lhs.y;
+		}
+
+		public static double Cross2DXZ(in Vector3 lhs, in Vector3 rhs)
+		{
+			return lhs.x * rhs.z - rhs.x * lhs.z;
+		}
+
+		public static double Cross2DYZ(in Vector3 lhs, in Vector3 rhs)
+		{
+			return lhs.y * rhs.z - rhs.z * lhs.y;
+		}
+
+		//三次元ベクトルの線形補間。tが0-1間にあるのかをチェックしない
+		public static Vector3 FastLerp(in Vector3 val1, in Vector3 val2, in float t)
+		{
+			return val1 + (val2 - val1) * t;
+		}
+
+		//浮動小数点数の線形補間。tが0-1間にあるのかをチェックしない
+		public static float FastLerp(float val1, float val2, in float t)
+		{
+			return val1 + (val2 - val1) * t;
+		}
+
 		//座標から方向ベクトルに対して垂直な直線を引いた時の交点を得る
 		// origin: 座標
 		// creasePoint: 始点
@@ -114,7 +142,7 @@ namespace Origami_Utility
 		public static Vector3 GetPerpendicularIntersectionPoint(in Vector3 point, in Vector3 creasePoint, in Vector3 creaseVec, in float sqrMagnitude)
 		{
 			//0除算を避けたいのでチェック
-			if(sqrMagnitude == 0.0f) return Vector3.zero;
+			if (sqrMagnitude == 0.0f) return Vector3.zero;
 
 			//直線ベクトルに対し、(交点-変換する頂点)を内積すると、垂直であるため0となる。
 			//また交点は直線の始点から直線ベクトル(=終点-始点)の間にあるため、始点+直線ベクトル*係数tと表せる
@@ -131,9 +159,9 @@ namespace Origami_Utility
 			var mag = creaseVec.sqrMagnitude;
 			return GetPerpendicularIntersectionPoint(point, creasePoint, creaseVec, mag);
 		}
-		
+
 		//スワップ
-		public static void Swap<T>(ref T val1, ref T val2) 
+		public static void Swap<T>(ref T val1, ref T val2)
 		{
 			var temp = val1;
 			val1 = val2;

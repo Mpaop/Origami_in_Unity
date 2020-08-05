@@ -9,7 +9,7 @@ namespace OrigamiDemo
 	//メッシュを折る線を書くクラス
 	public class MeshCreaseDrawer : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler
 	{
-		
+
 		//線を引く際の始点として使う座標。OnPointerDownで代入する
 		public Vector3 CreaseStartPoint { get; private set; }
 
@@ -106,12 +106,12 @@ namespace OrigamiDemo
 			var list = new System.Collections.Generic.List<OrigamiMesh>();
 			var path = System.IO.Path.Combine("Material", "OrigamiMaterial");
 
-            var connectedToCrease = new System.Collections.Generic.List<bool> { false, false, false };
+			var connectedToCrease = new System.Collections.Generic.List<bool> { false, false, false };
 
 			list.Add(new OrigamiMesh(MeshFoldMachine.GetVerticesSortedClockwise(new Vector3(-m_OrigamiSize, -m_OrigamiSize, 0), new Vector3(m_OrigamiSize, m_OrigamiSize, 0), new Vector3(m_OrigamiSize, -m_OrigamiSize, 0)), true, 0, connectedToCrease, path, parent.transform));
-            list.Add(new OrigamiMesh(MeshFoldMachine.GetVerticesSortedClockwise(new Vector3(-m_OrigamiSize, -m_OrigamiSize, 0), new Vector3(-m_OrigamiSize, m_OrigamiSize, 0), new Vector3(m_OrigamiSize, m_OrigamiSize, 0)), true, 0, connectedToCrease, path, parent.transform));
+			list.Add(new OrigamiMesh(MeshFoldMachine.GetVerticesSortedClockwise(new Vector3(-m_OrigamiSize, -m_OrigamiSize, 0), new Vector3(-m_OrigamiSize, m_OrigamiSize, 0), new Vector3(m_OrigamiSize, m_OrigamiSize, 0)), true, 0, connectedToCrease, path, parent.transform));
 
-            m_FoldMachine = new MeshFoldMachine(list, m_OrigamiSize, parent.transform, true);
+			m_FoldMachine = new MeshFoldMachine(list, m_OrigamiSize, parent.transform, true);
 
 			m_RotationAngle = 0f;
 		}
