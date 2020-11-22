@@ -490,8 +490,6 @@ namespace Origami_Fold
 				var crease = new Crease();
 				CreaseGenerateResults[] results;
 
-				bool facing = type == eFoldType.MoutainFold ? !closest.OrigamiMesh.IsFacingUp : closest.OrigamiMesh.IsFacingUp;
-
 				//レイヤーの差分が1以上ある場合はZファイティング対策でずらしたいため、処理を分ける
 				MeshVertex vx1, vx2, vx3, vx4;
 				if (newOuter == layer)
@@ -520,8 +518,8 @@ namespace Origami_Fold
 						var vx6 = new MeshVertex(furthest.Result.FoldResult.FoldOriginalPoint90, furthest.OrigamiMesh.FoldLayer, false);
 
 						var sorted = GetCreaseOrderedVertices(vx2, vx5, vx6, vx3);
-
-						fillerResults = fillerCrease.GenerateSquashedCrease(sorted, originalLayer, furthest.OrigamiMesh.FoldLayer, facing, creaseOffset, startAngle, targetAngle, m_MaterialPath, MeshParent);
+						var fillerFacing = type == eFoldType.ValleyFold ? closest.OrigamiMesh.IsFacingUp : !closest.OrigamiMesh.IsFacingUp;
+						fillerResults = fillerCrease.GenerateSquashedCrease(sorted, originalLayer, furthest.OrigamiMesh.FoldLayer, fillerFacing, creaseOffset, startAngle, targetAngle, m_MaterialPath, MeshParent);
 
 						m_GeneratedCreaseGroup.Add(fillerCrease);
 						m_CreaseGenerateResults.Add(fillerResults);
@@ -601,13 +599,18 @@ namespace Origami_Fold
 
 							}
 
-							OrigamiMesh fillerMesh = new OrigamiMesh(new List<Vector3>(3) { pt1.Vertex, pt2.Vertex, pt3.Vertex }, furthest.OrigamiMesh.IsFacingUp, originalLayer, new List<bool>(3) { pt1.IsConnectedToCrease, pt2.IsConnectedToCrease, pt3.IsConnectedToCrease }, m_MaterialPath, MeshParent);
+							OrigamiMesh fillerMesh = new OrigamiMesh(new List<Vector3>(3) { pt1.Vertex, pt2.Vertex, pt3.Vertex }, ! fillerParent.IsFacingUp, originalLayer, new List<bool>(3) { pt1.IsConnectedToCrease, pt2.IsConnectedToCrease, pt3.IsConnectedToCrease }, m_MaterialPath, MeshParent);
 
 							m_AllOrigamiMeshGroup.Add(fillerMesh);
 						}
 					}
 				}
 
+				var upDot = Vector2.Dot(Vector2.up, perpendicularVec);
+
+				bool facing = upDot > 0.0f ? !closest.OrigamiMesh.IsFacingUp : closest.OrigamiMesh.IsFacingUp;
+				// 谷折りの場合、手前に折られるため、頂点の配置の都合上、反転させる
+				if (type == eFoldType.ValleyFold) facing = !facing;
 
 				var orderedVertices = GetCreaseOrderedVertices(vx1, vx2, vx3, vx4);
 				results = crease.GenerateSquashedCrease(orderedVertices, originalLayer, closest.OrigamiMesh.FoldLayer, facing, creaseOffset, startAngle, targetAngle, m_MaterialPath, MeshParent);
